@@ -1,0 +1,131 @@
+name: Lifeplan policy audit (diagnostic)
+
+'on': [push, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  policy_audit:
+    name: Policy-rule gap audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout app
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Review calculation rules against fixed public examples
+        shell: bash
+        run: |
+          node <<'NODE'
+          'use strict';
+          // 2026-10-14 official-policy diagnostic audit: evaluates the *deployed HTML engine source*.
+          // This is intentionally NOT a replacement for legal/financial advice.
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const script = html.match(/<script\b[^>]*>([\s\S]*?)<\/script>/i)?.[1];
+          if (!script || !script.includes('LifeEngine')) throw Error('index.html に計算エンジンが見つかりません');
+          const engineEnd="})(typeof window!=='undefined'?window:globalThis);";
+          const cut=script.indexOf(engineEnd);
+          if(cut<0) throw Error('計算エンジン終端が見つかりません。HTML構造を確認してください');
+          const engineSource=script.slice(0,cut+engineEnd.length);
+          const ctx = vm.createContext({console});
+          vm.runInContext(engineSource, ctx, {filename:'index.html:embedded-engine',timeout:10000});
+          const E = ctx.LifeEngine;
+          if (!E || typeof E.calculate !== 'function' || typeof E.education !== 'function') throw Error('LifeEngine APIが見つかりません');
+          const B = () => ({
+            husband_birth:'1990-01-10',wife_birth:'1991-07-25',
+            kid1_birth:'',kid2_birth:'',kid3_birth:'',kid4_has:'no',
+            husband_month_net:'0',wife_month_net:'0',husband_bonus_net:'0',wife_bonus_net:'0',
+            current_savings:'0',current_invest_balance:'0',annual_investment:'0',
+            investment_return:'0',living_cost_annual:'0',living_cost_growth:'0',
+            child_allowance_mode:'no',univ_free_use:'no',hs_free_use:'no',
+            loan_principal:'0',travel_cost:'0',extra_income_amount:'0'
+          });
+          const year = 2026;
+          const reports = [];
+          function check(id, theme, title, expected, actual, ok, url, next){
+            reports.push({id,theme,title,expected,actual,ok,source:url,next});
+          }
+          const schoolSource = 'https://www.mext.go.jp/a_menu/shotou/shugaku/detail/1422233.htm';
+          const pensionSource = 'https://www.nenkin.go.jp/service/jukyu/seido/roureinenkin/jukyu-yoken/20150401-02.html';
+          const allowanceSource = 'https://www.cfa.go.jp/policies/kokoseido/jidouteate/annai';
+          const universitySource = 'https://www.mext.go.jp/content/20250207-mxt_gakushi01_100001505_2.pdf';
+          // 2014-04-02 belongs to sixth grade in academic year 2026.
+          {
+            const p = B();p.kid1_birth='2014-04-02';
+            const row=E.education(p,year,1).find(r=>r.order===1);
+            check('EDU-01','教育','4月2日生まれの小学6年生の費用区分', '小学校',row?.stage,row?.stage==='小学校',schoolSource,'年度・月次の在籍段階を使って集計');
+          }
+          // 2015-04-01 belongs to same grade as 2014-04-02 (April 1 exception).
+          {
+            const p=B();p.kid1_birth='2015-04-01';
+            const row=E.calculate(p,{startYear:year}).cashflow[0];
+            const label=row[3];
+            check('EDU-02','教育','4月1日生まれの学年表示', '小学6年生',label,/(?:小6)(?!\d)/.test(label),schoolSource,'4月1日を前年度生まれの学年に含める');
+          }
+          // Ordinary old-age basic pension starts at 65, not always at 60, and its amount varies.
+          {
+            const p=B();p.husband_birth='1966-01-10';
+            const income=E.calculate(p,{startYear:year}).cashflow[0][7];
+            check('PEN-01','年金','年金条件を未入力の60歳の年の自動加算',0,income,income===0,pensionSource,'年金受給開始年齢と金額を設定可能にする');
+          }
+          // A December newborn does not receive a full year of entitlement in the birth year.
+          {
+            const p=B();p.kid1_birth='2026-12-20';p.child_allowance_mode='yes';
+            const income=E.calculate(p,{startYear:year}).cashflow[0][7];
+            check('BEN-01','児童手当','12月20日出生の2026年分手当（他の収入0）',0,income,income===0,allowanceSource,'出生月と申請タイミングを考慮し月別に計算');
+          }
+          // Multi-child tuition reduction: national/public university tuition cap is 540k JPY.
+          {
+            const p=B();p.kid1_birth='2008-06-01';p.kid2_birth='2010-06-01';p.kid3_birth='2012-06-01';
+            p.kid1_univ_type='nat_lit';p.univ_free_use='yes';
+            const row=E.education(p,year,1).find(r=>r.order===1);
+            check('UNI-01','大学無償化','多子・国公立大学の年間授業料減免上限',540000,row?.subsidy,row?.subsidy===540000,universitySource,'国公立54万円・私立70万円と入学金を区別（実額・対象資格も確認）');
+          }
+          // Control case: 700k JPY for private university annual tuition, ignoring entrance fees.
+          {
+            const p=B();p.kid1_birth='2008-06-01';p.kid2_birth='2010-06-01';p.kid3_birth='2012-06-01';
+            p.kid1_univ_type='pri_sci';p.univ_free_use='yes';
+            const row=E.education(p,year,1).find(r=>r.order===1);
+            check('UNI-02','大学無償化','多子・私立大学の年間授業料減免上限',700000,row?.subsidy,row?.subsidy===700000,universitySource,'入学金・実際の扶養判定・大学側の対象資格も別途検証');
+          }
+          let gaps=0;
+          for (const r of reports){
+            if(r.ok){console.log(`OK ${r.id} ${r.title} => ${JSON.stringify(r.actual)}`);continue;}
+            gaps++;
+            console.log(`GAP ${r.id} ${r.title}：期待=${JSON.stringify(r.expected)} ／ 実際=${JSON.stringify(r.actual)}`);
+            console.log(`::warning file=index.html,title=${r.id} 制度上の要確認::${r.title}。期待=${r.expected}、現状=${r.actual}。${r.next}`);
+          }
+          const summary = [
+            '# 制度・計算ルール診断（参考値との差異）',
+            '',
+            `**診断完了**: ${reports.length}件 / 差異あり ${gaps}件 / 一致 ${reports.length-gaps}件`,
+            '',
+            '> このジョブが緑色でも「すべての制度が正しい」意味ではありません。差異は以下の表とWarningsで確認してください。',
+            '> テストには架空データのみ使用。正しい適用には生計維持・対象校・申請等の個別確認も必要です。',
+            '',
+            '| ID | 分野 | 検査内容 | 期待 | 現状 | 判定 |',
+            '|:--|:--|:--|:--|:--|:--|',
+            ...reports.map(r=>`| ${r.id} | ${r.theme} | ${r.title} | ${String(r.expected)} | ${String(r.actual)} | ${r.ok?'一致':'⚠️ 要修正'} |`),
+            '',
+            '## 根拠・次の作業',
+            ...reports.map(r=>`- **${r.id}**: ${r.next}。 [公的資料](${r.source})`),
+            '',
+            '※大学の減免額は指定年度の授業料上限だけを検査。入学金、対象校、在学状況、扶養、所得区分、適用月は未審査。',
+            '※テストが継続実行されることと、残る重大なレビュー事項の解決は別です。'
+          ].join('\n');
+          if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary+'\n');
+          fs.writeFileSync('policy-audit-result.json', JSON.stringify({date:'2026-10-14',checks:reports.length,gaps,results:reports},null,2));
+          console.log(`\n診断終了：${reports.length}項目、差異 ${gaps}項目。診断自体は成功（既知の差異は警告）。`);
+          NODE
+      - name: Save audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: policy-audit-result
+          path: policy-audit-result.json
+          retention-days: 14
