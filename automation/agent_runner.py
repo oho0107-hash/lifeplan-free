@@ -24,12 +24,16 @@ _calls = 0
 
 
 def ask(role, instruction, prompt, limit=3500):
+    """Gemini REST call with bounded retries for temporary server overload.
+
+    A 503 is not an authentication failure. Retry transient 5xx and timeouts
+    with exponential backoff + jitter. Never retry permanent auth/model errors.
+    Actual HTTP attempts are counted against MAX_CALLS (not just logical asks)
+    so the no-cost/free-tier safety limit remains meaningful.
+    """
     global _calls
     if not KEY:
         raise RuntimeError('GEMINI_API_KEY secret is missing. No AI request was made.')
-    if _calls >= MAX_CALLS:
-        raise RuntimeError('Gemini request cap reached; stopped to respect free quota')
-    _calls += 1
     payload = {
       'systemInstruction': {'parts':[{'text': role + '\n' + instruction + '\nNo external browsing. Do not invent official sources or claim professional certification. Only output valid JSON.'}]},
       'contents':[{'role':'user','parts':[{'text':prompt}]}],
@@ -39,15 +43,37 @@ def ask(role, instruction, prompt, limit=3500):
         'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent',
         data=json.dumps(payload,ensure_ascii=False).encode(),
         headers={'Content-Type':'application/json','x-goog-api-key':KEY},method='POST')
-    try:
-        with urllib.request.urlopen(req,timeout=90) as resp:
-            raw=json.load(resp)
-    except urllib.error.HTTPError as e:
-        msg=e.read(1000).decode('utf-8','replace')
-        # Neither key nor HTTP data included in output
-        if e.code in (429,403,404):
-            raise RuntimeError(f'{role}: API status {e.code}; free tier/model access or rate limit. Stop, no paid fallback. {msg[:180]}') from None
-        raise RuntimeError(f'{role}: Gemini HTTP {e.code} - {msg[:180]}') from None
+    # Four attempts at most. 5 -> 15 -> 45 seconds, plus small jitter.
+    # Permanent errors (401/403/404) and 429 quota exhaustion stop immediately.
+    retry_waits = (5, 15, 45)
+    for attempt in range(len(retry_waits) + 1):
+        if _calls >= MAX_CALLS:
+            raise RuntimeError('Gemini request cap reached (actual HTTP attempts); stopped to protect free-tier quota')
+        _calls += 1
+        try:
+            with urllib.request.urlopen(req,timeout=90) as resp:
+                raw=json.load(resp)
+            break
+        except urllib.error.HTTPError as e:
+            # Limit the body shown in logs; never print the API key or request headers.
+            msg=e.read(1000).decode('utf-8','replace')
+            if e.code in (408,500,502,503,504) and attempt < len(retry_waits):
+                import random
+                delay=retry_waits[attempt] + random.uniform(0, 2)
+                print(f'{role}: Gemini temporary HTTP {e.code}; attempt {attempt+1}/4. Waiting {delay:.1f}s before retry.', flush=True)
+                time.sleep(delay)
+                continue
+            if e.code in (429,401,403,404):
+                raise RuntimeError(f'{role}: API status {e.code}; check free quota/model access, no paid fallback. {msg[:180]}') from None
+            raise RuntimeError(f'{role}: Gemini HTTP {e.code} after {attempt+1} attempt(s) - {msg[:180]}') from None
+        except (urllib.error.URLError, TimeoutError) as e:
+            if attempt < len(retry_waits):
+                import random
+                delay=retry_waits[attempt] + random.uniform(0, 2)
+                print(f'{role}: transient Gemini connection error; attempt {attempt+1}/4. Waiting {delay:.1f}s before retry.', flush=True)
+                time.sleep(delay)
+                continue
+            raise RuntimeError(f'{role}: Gemini connection failed after {attempt+1} attempt(s): {type(e).__name__}') from None
     parts=raw.get('candidates',[{}])[0].get('content',{}).get('parts',[])
     txt=''.join(x.get('text','') for x in parts)
     if not txt.strip():raise RuntimeError(f'{role}: empty Gemini response')
