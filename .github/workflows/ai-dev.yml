@@ -141,22 +141,24 @@ jobs:
             --title "AI提案: Issue #${ISSUE_NUMBER}" \
             --body "要望 #${ISSUE_NUMBER} を6分野のAIと実費調査AIがレビューし、独立品質ゲートと自動操作テストを通過しました。変更点と未検証項目は reviews/ 内の今回のレポートに記載しています。計算や制度に関する変更は必ず人が確認してください。")
           echo "PR_URL=$pr" >> "$GITHUB_ENV"
-          gh issue comment "$ISSUE_NUMBER" --body "AIから修正提案を作成しました: $pr 。テスト実行済み。公開承認が必要な場合はPull Requestの Merge pull request を確認してください。"
-      - name: Auto-merge CSS-only cosmetic changes, then request Pages deployment
-        if: success()
+          gh issue comment "$ISSUE_NUMBER" --body "AIから修正提案を作成しました: $pr 。提案コードの内部テスト実行済み。別の pr-quality-gate チェック合格と差分確認の後に Merge pull request を押してください。"
+      # Pull requests created with GITHUB_TOKEN can have PR checks pending approval.
+      # Explicit workflow_dispatch always starts a new independent run against
+      # the proposed branch's head SHA; require pr-quality-gate before merging.
+      - name: Dispatch independent PR quality checks
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          source agent-output/release.env
-          if test "$AUTO_CSS_ONLY" != true; then
-            echo '重要または未分類変更: PRを残して承認待ち'; exit 0
-          fi
-          if gh pr merge "$PR_URL" --merge; then
-            echo 'CSS-only auto merge complete.'
-            gh workflow run agent-pages.yml -r main || echo 'Pages dispatch failed; check Pages settings.'
-          else
-            echo 'Auto merge blocked by branch protection. PR remains for manual review.'
-          fi
+          gh workflow run pr-quality-gate.yml --ref "$AI_BRANCH"
+          echo "Independent check started for $AI_BRANCH."
+          echo "Do NOT merge the PR until pr-quality-gate succeeds."
+
+      # Deliberately no auto-merge in this safety-first release. This avoids
+      # racing the required independent checks, including for CSS-only changes.
+      - name: Keep proposed change pending check and human approval
+        run: |
+          echo 'PR is open. Independent quality checks must pass first.'
+          echo 'Important financial changes always require human approval.'
 
   alert:
     if: failure() && (github.event_name == 'workflow_dispatch' || github.event.issue.user.login == github.repository_owner)

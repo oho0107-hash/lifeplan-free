@@ -1,0 +1,75 @@
+name: LIFE independent PR quality
+'on':
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+# Do not give PR code credentials, write permissions or secrets.
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-quality-gate:
+    name: pr-quality-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout proposed app code (read only)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Prepare Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Prepare Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Confirm required source and test files
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in index.html engine.js automation/test_smoke.cjs \
+                   automation/test_guard.py automation/test_cost_research.py \
+                   automation/test_education_cost_audit.py \
+                   automation/test_education_cost_budget.py \
+                   automation/test_browser.py; do
+            test -s "$f" || { echo "Missing required file: $f"; exit 1; }
+          done
+          node --check engine.js
+
+      - name: Independent rule and finance regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          for suite in test_guard.py test_cost_research.py \
+                       test_education_cost_audit.py test_education_cost_budget.py; do
+            python -m unittest discover -s automation -p "$suite" -q
+          done
+          node --test automation/test_smoke.cjs
+          if test -f tests/engine.test.cjs; then
+            node --test tests/engine.test.cjs
+          fi
+
+      - name: Install open-source browser testing tools
+        run: |
+          python -m pip install 'playwright>=1.55,<2' 'pytest>=8,<10'
+          python -m playwright install --with-deps chromium
+
+      - name: Enter fake family data into browser and verify actual results
+        shell: bash
+        run: |
+          set -euo pipefail
+          python automation/test_browser.py
+          if test -f tests/test_browser.py; then
+            python -m pytest -q tests/test_browser.py
+          fi
