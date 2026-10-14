@@ -73,3 +73,38 @@ jobs:
           if test -f tests/test_browser.py; then
             python -m pytest -q tests/test_browser.py
           fi
+
+
+  # workflow_dispatch checks are not automatically attached to Pull Requests.
+  # After the isolated, read-only tests finish, post a *commit status* on the
+  # exact tested SHA. This is what branch protection will require.
+  # This job never checks out or executes code from the proposed branch.
+  publish-commit-status:
+    name: publish-commit-status
+    needs: [pr-quality-gate]
+    if: ${{ always() && github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      statuses: write
+    steps:
+      - name: Record independent quality verdict against tested commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TEST_RESULT: ${{ needs.pr-quality-gate.result }}
+        run: |
+          set -euo pipefail
+          if [[ "$TEST_RESULT" == 'success' ]]; then
+            verdict='success'
+            message='Independent calculator and browser tests passed'
+          else
+            verdict='failure'
+            message='Independent calculator or browser tests failed'
+          fi
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state="$verdict" \
+            -f context='lifeplan/independent-quality' \
+            -f description="$message" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          echo "Posted commit status: lifeplan/independent-quality=$verdict for $GITHUB_SHA"
