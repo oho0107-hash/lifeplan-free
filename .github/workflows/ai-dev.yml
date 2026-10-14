@@ -1,0 +1,174 @@
+name: LIFE AI development team
+'on':
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: '既存のGitHub Issue番号（半角数字）'
+        required: true
+        type: string
+
+concurrency:
+  group: life-agent-${{ github.event.issue.number || inputs.issue_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  # Owner requests only. Never spend a free API quota on public strangers' issues.
+  generate:
+    if: >-
+      (github.event_name == 'issues' && github.event.issue.user.login == github.repository_owner) ||
+      (github.event_name == 'workflow_dispatch' && github.actor == github.repository_owner)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free PDF parser for university tuition brochures
+        run: python -m pip install 'pypdf>=5,<7'
+      - name: Read requirement from the owner's issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: |
+          case "$ISSUE_NUMBER" in ''|*[!0-9]*) echo 'Invalid issue number'; exit 1;; esac
+          author=$(gh api "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER" --jq '.user.login')
+          test "$author" = "$GITHUB_REPOSITORY_OWNER" || { echo 'Only repo owner issues can run the agent'; exit 1; }
+          gh api "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER" --jq '.body // ""' > /tmp/lifeplan_issue.txt
+      - name: Generate requirements, six reviewers, comprehensive actual cost research and source patch
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.1-flash-lite
+          ISSUE_FILE: /tmp/lifeplan_issue.txt
+          AGENT_OUTPUT: agent-output
+          PROJECT_ROOT: .
+        run: python automation/agent_runner.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: proposed-app
+          path: agent-output/
+          retention-days: 7
+
+  verify:
+    needs: [generate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: proposed-app
+          path: agent-output
+      - name: Install patch in isolated test runner (no AI key, no write token)
+        run: |
+          cp agent-output/index.html index.html
+          cp agent-output/engine.js engine.js
+          node --check engine.js
+          python -m unittest discover -s automation -p test_guard.py -q
+          python -m unittest discover -s automation -p test_cost_research.py -q
+          python -m unittest discover -s automation -p test_education_cost_audit.py -q
+          python -m unittest discover -s automation -p test_education_cost_budget.py -q
+          node --test automation/test_smoke.cjs
+          if test -f tests/engine.test.cjs; then node --test tests/engine.test.cjs; fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright on ephemeral runner
+        run: |
+          python -m pip install 'playwright>=1.55,<2' 'pytest>=8,<10'
+          python -m playwright install --with-deps chromium
+      - name: Fill out forms and compare results in real Chromium
+        run: |
+          python automation/test_browser.py
+          if test -f tests/test_browser.py; then python -m pytest -q tests/test_browser.py; fi
+
+  propose:
+    needs: [generate, verify]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: proposed-app
+          path: agent-output
+      - name: Recheck source has not changed; create proposed branch
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: |
+          python - <<'PY'
+          import hashlib,pathlib
+          expected=pathlib.Path('agent-output/base.sha256').read_text().strip()
+          current=hashlib.sha256(pathlib.Path('index.html').read_bytes()).hexdigest()
+          if current != expected:raise SystemExit('main has changed during review; re-run AI on newest revision')
+          PY
+          mkdir -p reviews costs
+          cp agent-output/index.html index.html
+          cp agent-output/engine.js engine.js
+          cp agent-output/AI_REVIEW.md "reviews/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.md"
+          cp agent-output/COST_EVIDENCE.json "costs/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json"
+          cp agent-output/COST_COVERAGE.json "costs/coverage-issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json"
+          git config user.name 'lifeplan-ai[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          branch="ai/issue-${ISSUE_NUMBER}-${GITHUB_RUN_ID}"
+          git checkout -b "$branch"
+          git add index.html engine.js "reviews/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.md" "costs/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json" "costs/coverage-issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json"
+          git commit -m "AI reviewed change for issue #${ISSUE_NUMBER}"
+          git push --set-upstream origin "$branch"
+          echo "AI_BRANCH=$branch" >> "$GITHUB_ENV"
+      - name: Open reviewed pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: |
+          pr=$(gh pr create --base main --head "$AI_BRANCH" \
+            --title "AI提案: Issue #${ISSUE_NUMBER}" \
+            --body "要望 #${ISSUE_NUMBER} を6分野のAIと実費調査AIがレビューし、独立品質ゲートと自動操作テストを通過しました。変更点と未検証項目は reviews/ 内の今回のレポートに記載しています。計算や制度に関する変更は必ず人が確認してください。")
+          echo "PR_URL=$pr" >> "$GITHUB_ENV"
+          gh issue comment "$ISSUE_NUMBER" --body "AIから修正提案を作成しました: $pr 。テスト実行済み。公開承認が必要な場合はPull Requestの Merge pull request を確認してください。"
+      - name: Auto-merge CSS-only cosmetic changes, then request Pages deployment
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          source agent-output/release.env
+          if test "$AUTO_CSS_ONLY" != true; then
+            echo '重要または未分類変更: PRを残して承認待ち'; exit 0
+          fi
+          if gh pr merge "$PR_URL" --merge; then
+            echo 'CSS-only auto merge complete.'
+            gh workflow run agent-pages.yml -r main || echo 'Pages dispatch failed; check Pages settings.'
+          else
+            echo 'Auto merge blocked by branch protection. PR remains for manual review.'
+          fi
+
+  alert:
+    if: failure() && (github.event_name == 'workflow_dispatch' || github.event.issue.user.login == github.repository_owner)
+    needs: [generate, verify, propose]
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Comment failure with log link (do not expose API credentials)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: |
+          case "$ISSUE_NUMBER" in ''|*[!0-9]*) exit 0;; esac
+          gh issue comment "$ISSUE_NUMBER" --body "AI作業は安全側に停止しました。API無料枠・編集対象・独立レビュー・テストのどこかで失敗しています。ログ: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID 。本番アプリは変更していません。" || true
