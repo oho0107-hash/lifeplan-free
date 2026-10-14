@@ -1,10 +1,8 @@
 name: Lifeplan policy audit (diagnostic)
 
 'on': [push, workflow_dispatch]
-
 permissions:
   contents: read
-
 jobs:
   policy_audit:
     name: Policy-rule gap audit
@@ -17,12 +15,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Review calculation rules against fixed public examples
+      - name: Run fixed policy examples against embedded engine
         shell: bash
         run: |
           node <<'NODE'
           'use strict';
-          // 2026-10-14 official-policy diagnostic audit: evaluates the *deployed HTML engine source*.
+          // 2026-10-15 official-policy diagnostic audit: evaluates the *deployed HTML engine source*.
           // This is intentionally NOT a replacement for legal/financial advice.
           const fs = require('node:fs');
           const vm = require('node:vm');
@@ -82,14 +80,14 @@ jobs:
           }
           // Multi-child tuition reduction: national/public university tuition cap is 540k JPY.
           {
-            const p=B();p.kid1_birth='2008-06-01';p.kid2_birth='2010-06-01';p.kid3_birth='2012-06-01';
+            const p=B();p.kid1_birth='2006-06-01';p.kid2_birth='2009-06-01';p.kid3_birth='2010-06-01';
             p.kid1_univ_type='nat_lit';p.univ_free_use='yes';
             const row=E.education(p,year,1).find(r=>r.order===1);
             check('UNI-01','大学無償化','多子・国公立大学の年間授業料減免上限',540000,row?.subsidy,row?.subsidy===540000,universitySource,'国公立54万円・私立70万円と入学金を区別（実額・対象資格も確認）');
           }
           // Control case: 700k JPY for private university annual tuition, ignoring entrance fees.
           {
-            const p=B();p.kid1_birth='2008-06-01';p.kid2_birth='2010-06-01';p.kid3_birth='2012-06-01';
+            const p=B();p.kid1_birth='2006-06-01';p.kid2_birth='2009-06-01';p.kid3_birth='2010-06-01';
             p.kid1_univ_type='pri_sci';p.univ_free_use='yes';
             const row=E.education(p,year,1).find(r=>r.order===1);
             check('UNI-02','大学無償化','多子・私立大学の年間授業料減免上限',700000,row?.subsidy,row?.subsidy===700000,universitySource,'入学金・実際の扶養判定・大学側の対象資格も別途検証');
@@ -120,12 +118,14 @@ jobs:
             '※テストが継続実行されることと、残る重大なレビュー事項の解決は別です。'
           ].join('\n');
           if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary+'\n');
-          fs.writeFileSync('policy-audit-result.json', JSON.stringify({date:'2026-10-14',checks:reports.length,gaps,results:reports},null,2));
+          fs.writeFileSync('policy-audit-result.json', JSON.stringify({date:'2026-10-15',checks:reports.length,gaps,results:reports},null,2));
           console.log(`\n診断終了：${reports.length}項目、差異 ${gaps}項目。診断自体は成功（既知の差異は警告）。`);
+
           NODE
-      - name: Save audit results
+      - name: Upload audit report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: policy-audit-result
+          name: lifeplan-policy-audit
           path: policy-audit-result.json
-          retention-days: 14
+          if-no-files-found: ignore
