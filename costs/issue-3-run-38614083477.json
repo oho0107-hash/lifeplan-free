@@ -1,0 +1,358 @@
+{
+  "status": "verified_official_price_excerpts_not_full_budget",
+  "selection_scope": "illustrative_candidates_not_user_confirmed",
+  "retrieved_sources": [
+    {
+      "school": "開成中学校",
+      "url": "https://kaiseigakuen.jp/about/expenses/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-14T18:19:03.288039+00:00",
+      "reason": null
+    },
+    {
+      "school": "渋谷教育学園幕張中学校",
+      "url": "https://www.shibumaku.jp/admissions/tuition/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-14T18:19:04.275547+00:00",
+      "reason": null
+    },
+    {
+      "school": "早稲田アカデミー 小6 Sコース",
+      "url": "https://www.waseda-ac.co.jp/elementary/course/sixth/outline.html",
+      "status": "ok",
+      "year": null,
+      "fetched_at": "2026-10-14T18:19:04.991508+00:00",
+      "reason": null
+    },
+    {
+      "school": "早稲田アカデミー 小6 夏期講習",
+      "url": "https://www.waseda-ac.co.jp/elementary/shortcourse_summer/e6.html",
+      "status": "ok",
+      "year": null,
+      "fetched_at": "2026-10-14T18:19:05.782603+00:00",
+      "reason": null
+    },
+    {
+      "school": "明治大学 理工学部",
+      "url": "https://www.meiji.ac.jp/suito/mkmht000002b7evj-att/2026gakubu.pdf",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-14T18:19:07.265855+00:00",
+      "reason": null
+    },
+    {
+      "school": "早稲田大学 創造理工学部",
+      "url": "https://fsci-wu.w.waseda.jp/handbooks/2026/02sozo/pageindices/index88.html",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-14T18:19:08.274341+00:00",
+      "reason": null
+    },
+    {
+      "school": "ひがし幼稚園",
+      "url": "https://higashi.ac.jp/admission2026/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-14T18:19:10.854827+00:00",
+      "reason": null
+    },
+    {
+      "school": "みさとさくらの森 0-2歳児",
+      "url": "https://watanabe.ac.jp/misato/introduction/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-14T18:19:12.192584+00:00",
+      "reason": null
+    },
+    {
+      "school": "慶應義塾幼稚舎",
+      "url": "https://www.yochisha.keio.ac.jp/admissions/qa/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-14T18:19:13.183665+00:00",
+      "reason": null
+    },
+    {
+      "school": "開成高等学校",
+      "url": "https://kaiseigakuen.jp/about/expenses/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-14T18:19:14.203844+00:00",
+      "reason": null
+    }
+  ],
+  "records": [
+    {
+      "school": "開成中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "kaisei_jhs_2026",
+      "source_url": "https://kaiseigakuen.jp/about/expenses/",
+      "fetched_at": "2026-10-14T18:19:03.288039+00:00",
+      "cost_name": "学級費",
+      "amount_yen": 160000,
+      "cost_type": "materials",
+      "course_or_grade": "中学校第1学年",
+      "bill_includes": "学年旅行費・教材費等",
+      "period": "annual",
+      "quote": "学級費(学年旅行費・教材費等、2026 度第 1 学年は 160,000 円)",
+      "required": true,
+      "notes": "教育費は進学先や年度によって変動します。実際の学校・塾の費用を確認してご利用ください。"
+    },
+    {
+      "school": "渋谷教育学園幕張中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "shibumaku_jhs_2026",
+      "source_url": "https://www.shibumaku.jp/admissions/tuition/",
+      "fetched_at": "2026-10-14T18:19:04.275547+00:00",
+      "cost_name": "入学金",
+      "amount_yen": 300000,
+      "cost_type": "admission",
+      "course_or_grade": "中学校",
+      "bill_includes": "入学手続時に納入",
+      "period": "once",
+      "quote": "入学金 300,000円",
+      "required": true,
+      "notes": "入学手続時に納入"
+    },
+    {
+      "school": "渋谷教育学園幕張中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "shibumaku_jhs_2026",
+      "source_url": "https://www.shibumaku.jp/admissions/tuition/",
+      "fetched_at": "2026-10-14T18:19:04.275547+00:00",
+      "cost_name": "施設拡充費",
+      "amount_yen": 150000,
+      "cost_type": "facility",
+      "course_or_grade": "中学校",
+      "bill_includes": "入学後に納入",
+      "period": "once",
+      "quote": "施設拡充費 150,000円",
+      "required": true,
+      "notes": "入学後に納入"
+    },
+    {
+      "school": "渋谷教育学園幕張中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "shibumaku_jhs_2026",
+      "source_url": "https://www.shibumaku.jp/admissions/tuition/",
+      "fetched_at": "2026-10-14T18:19:04.275547+00:00",
+      "cost_name": "授業料",
+      "amount_yen": 39000,
+      "cost_type": "tuition",
+      "course_or_grade": "中学校",
+      "bill_includes": "毎月の納入金",
+      "period": "monthly",
+      "quote": "授業料 39,000円",
+      "required": true,
+      "notes": "毎月の納入金"
+    },
+    {
+      "school": "早稲田アカデミー 小6 Sコース",
+      "stage": "cram_elementary",
+      "year": null,
+      "source_id": "waseda_academy_jhs_exam_s6",
+      "source_url": "https://www.waseda-ac.co.jp/elementary/course/sixth/outline.html",
+      "fetched_at": "2026-10-14T18:19:04.991508+00:00",
+      "cost_name": "受講料",
+      "amount_yen": 54900,
+      "cost_type": "special_course",
+      "course_or_grade": "小6 Sコース",
+      "bill_includes": "4科コース",
+      "period": "monthly",
+      "quote": "4科コース:54,900円/月",
+      "required": true,
+      "notes": "別途年会費2,900円/月・教材費・必修テスト代・前期土曜YT講座代が必要となります。"
+    },
+    {
+      "school": "早稲田アカデミー 小6 夏期講習",
+      "stage": "cram_elementary",
+      "year": null,
+      "source_id": "waseda_academy_summer_s6",
+      "source_url": "https://www.waseda-ac.co.jp/elementary/shortcourse_summer/e6.html",
+      "fetched_at": "2026-10-14T18:19:05.782603+00:00",
+      "cost_name": "夏期講習会費",
+      "amount_yen": 205300,
+      "cost_type": "seasonal_course",
+      "course_or_grade": "小6 Sコース",
+      "bill_includes": "4科目(国語・算数・社会・理科)塾生料金",
+      "period": "per_event",
+      "quote": "塾生料金:205,300円/一般生料金:255,300円",
+      "required": true,
+      "notes": "受講料には教材費・消費税が含まれています。"
+    },
+    {
+      "school": "明治大学 理工学部",
+      "stage": "university",
+      "year": 2026,
+      "source_id": "meiji_science_2026",
+      "source_url": "https://www.meiji.ac.jp/suito/mkmht000002b7evj-att/2026gakubu.pdf",
+      "fetched_at": "2026-10-14T18:19:07.265855+00:00",
+      "cost_name": "入学金",
+      "amount_yen": 200000,
+      "cost_type": "admission",
+      "course_or_grade": "理工学部 1年次",
+      "bill_includes": "入学諸費用",
+      "period": "once",
+      "quote": "入学金 200,000",
+      "required": true,
+      "notes": "初年度のみ納入"
+    },
+    {
+      "school": "早稲田大学 創造理工学部",
+      "stage": "university",
+      "year": 2026,
+      "source_id": "waseda_science_2026",
+      "source_url": "https://fsci-wu.w.waseda.jp/handbooks/2026/02sozo/pageindices/index88.html",
+      "fetched_at": "2026-10-14T18:19:08.274341+00:00",
+      "cost_name": "入学金",
+      "amount_yen": 200000,
+      "cost_type": "admission",
+      "course_or_grade": "創造理工学部 建築学科",
+      "bill_includes": "2026年度入学者学費・諸会費",
+      "period": "once",
+      "quote": "金 200,000",
+      "required": true,
+      "notes": "教育費は進学先や年度によって変動します。実際の学校・塾の費用を確認してご利用ください。"
+    },
+    {
+      "school": "早稲田大学 創造理工学部",
+      "stage": "university",
+      "year": 2026,
+      "source_id": "waseda_science_2026",
+      "source_url": "https://fsci-wu.w.waseda.jp/handbooks/2026/02sozo/pageindices/index88.html",
+      "fetched_at": "2026-10-14T18:19:08.274341+00:00",
+      "cost_name": "授業料",
+      "amount_yen": 792000,
+      "cost_type": "tuition",
+      "course_or_grade": "創造理工学部 建築学科",
+      "bill_includes": "学業料",
+      "period": "annual",
+      "quote": "学業料 792,000",
+      "required": true,
+      "notes": "教育費は進学先や年度によって変動します。実際の学校・塾の費用を確認してご利用ください。"
+    },
+    {
+      "school": "ひがし幼稚園",
+      "stage": "kindergarten",
+      "year": 2026,
+      "source_id": "higashi_kindergarten_2026",
+      "source_url": "https://higashi.ac.jp/admission2026/",
+      "fetched_at": "2026-10-14T18:19:10.854827+00:00",
+      "cost_name": "施設機能強化費",
+      "amount_yen": 55000,
+      "cost_type": "facility",
+      "course_or_grade": "満3歳児",
+      "bill_includes": "入園時1回のみ",
+      "period": "once",
+      "quote": "施設機能強化費(入園時1回のみ) 一律 55,000円",
+      "required": true,
+      "notes": "教育費は進学先や年度によって変動します。実際の学校・塾の費用を確認してご利用ください。"
+    },
+    {
+      "school": "みさとさくらの森 0-2歳児",
+      "stage": "nursery",
+      "year": 2026,
+      "source_id": "misato_nursery_2026",
+      "source_url": "https://watanabe.ac.jp/misato/introduction/",
+      "fetched_at": "2026-10-14T18:19:12.192584+00:00",
+      "cost_name": "教育充実費",
+      "amount_yen": 4000,
+      "cost_type": "equipment",
+      "course_or_grade": "0-2歳児",
+      "bill_includes": "特定負担額",
+      "period": "monthly",
+      "quote": "教育充実費 4,000円/月 (※特定負担額)",
+      "required": true,
+      "notes": "教育費は進学先や年度によって変動します。実際の学校・塾の費用を確認してご利用ください。"
+    },
+    {
+      "school": "慶應義塾幼稚舎",
+      "stage": "elementary",
+      "year": 2026,
+      "source_id": "keio_elementary_2026",
+      "source_url": "https://www.yochisha.keio.ac.jp/admissions/qa/",
+      "fetched_at": "2026-10-14T18:19:13.183665+00:00",
+      "cost_name": "入学金",
+      "amount_yen": 340000,
+      "cost_type": "admission",
+      "course_or_grade": "1年生",
+      "bill_includes": "2026年度1年生の入学に必要な学費",
+      "period": "once",
+      "quote": "入学金 340,000円",
+      "required": true,
+      "notes": "教育費は進学先や年度によって変動します。実際の学校・塾の費用を確認してご利用ください。"
+    },
+    {
+      "school": "慶應義塾幼稚舎",
+      "stage": "elementary",
+      "year": 2026,
+      "source_id": "keio_elementary_2026",
+      "source_url": "https://www.yochisha.keio.ac.jp/admissions/qa/",
+      "fetched_at": "2026-10-14T18:19:13.183665+00:00",
+      "cost_name": "授業料",
+      "amount_yen": 1060000,
+      "cost_type": "tuition",
+      "course_or_grade": "1年生",
+      "bill_includes": "年額",
+      "period": "annual",
+      "quote": "授業料 [年額] 1,060,000円",
+      "required": true,
+      "notes": "教育費は進学先や年度によって変動します。実際の学校・塾の費用を確認してご利用ください。"
+    }
+  ],
+  "rejected": [
+    {
+      "source_id": "kaisei_jhs_2026",
+      "name": "入学金",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_jhs_2026",
+      "name": "施設拡充資金",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_jhs_2026",
+      "name": "授業料",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_jhs_2026",
+      "name": "施設維持費",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_jhs_2026",
+      "name": "実験実習料",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "meiji_science_2026",
+      "name": "授業料",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "higashi_kindergarten_2026",
+      "name": "出願手続き料",
+      "reason": "no independently matched official quote/amount"
+    }
+  ],
+  "not_checked": [
+    "開成中学校の「学級費」「施設拡充資金(第2学年以降)」「寄付」の詳細な金額や必須性、あるいは内訳の過不足",
+    "渋谷教育学園幕張中学校の積立金や教材費の正確な年額総額"
+  ],
+  "limitations": [
+    "This registry only covers named registered schools; missing fees are NOT zero.",
+    "Allowances, scholarships and subsidies require separate eligibility verification.",
+    "Optional services, uniforms, exam costs, inflation and student housing require itemized sources.",
+    "Cost snapshots are NOT user family information. Do not auto-change baseline rules.",
+    "When selection_scope is illustrative_candidates_not_user_confirmed, NEVER put these prices into main user baseline automatically."
+  ],
+  "coverage_note": "教育費の全14カテゴリをチェック。未確認は0円ではない。登録校は本人の進学希望校とは限らない。"
+}
