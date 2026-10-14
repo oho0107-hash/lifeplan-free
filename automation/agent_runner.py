@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import re
 import time
 import urllib.error
 import urllib.request
@@ -15,21 +16,23 @@ from cost_research import collect, registry, verify_ai_records
 from education_cost_audit import report as cost_coverage_report
 
 MODEL = os.getenv('GEMINI_MODEL','gemini-3.1-flash-lite')
+# Both IDs are documented Free-tier text models (availability varies by project).
+# Never fall back to arbitrary or paid models.
+FALLBACK_MODEL = 'gemini-3.5-flash-lite' if MODEL == 'gemini-3.1-flash-lite' else None
 KEY = os.getenv('GEMINI_API_KEY','')
 ISSUE_FILE = Path(os.getenv('ISSUE_FILE','/tmp/lifeplan_issue.txt'))
 OUT = Path(os.getenv('AGENT_OUTPUT','agent-output'))
 REPO = Path(os.getenv('PROJECT_ROOT','.'))
-MAX_CALLS = 14
+MAX_CALLS = 28
 _calls = 0
 
 
 def ask(role, instruction, prompt, limit=3500):
-    """Gemini REST call with bounded retries for temporary server overload.
+    """Make a bounded Free-tier Gemini request with transient-error fallback.
 
-    A 503 is not an authentication failure. Retry transient 5xx and timeouts
-    with exponential backoff + jitter. Never retry permanent auth/model errors.
-    Actual HTTP attempts are counted against MAX_CALLS (not just logical asks)
-    so the no-cost/free-tier safety limit remains meaningful.
+    First two attempts use the configured free model. On 503/5xx, try an
+    independently documented free model instead of endlessly retrying a busy
+    backend. 401/403/404/429 stop with no alternative/paid retry.
     """
     global _calls
     if not KEY:
@@ -39,46 +42,66 @@ def ask(role, instruction, prompt, limit=3500):
       'contents':[{'role':'user','parts':[{'text':prompt}]}],
       'generationConfig':{'responseMimeType':'application/json','maxOutputTokens':limit,'temperature':0.15}
     }
-    req = urllib.request.Request(
-        'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent',
-        data=json.dumps(payload,ensure_ascii=False).encode(),
-        headers={'Content-Type':'application/json','x-goog-api-key':KEY},method='POST')
-    # Four attempts at most. 5 -> 15 -> 45 seconds, plus small jitter.
-    # Permanent errors (401/403/404) and 429 quota exhaustion stop immediately.
-    retry_waits = (5, 15, 45)
-    for attempt in range(len(retry_waits) + 1):
+    data=json.dumps(payload,ensure_ascii=False).encode('utf-8')
+    # Bounded: 1 original + 1 original retry + up to 2 fallback attempts.
+    # The fallback is used ONLY for transient server failures, never for
+    # quota/auth/model-access errors or malformed responses.
+    models = [MODEL, MODEL]
+    if FALLBACK_MODEL:
+        models.extend([FALLBACK_MODEL, FALLBACK_MODEL])
+    delays = [0, 3, 8, 18]
+    for attempt, model in enumerate(models):
         if _calls >= MAX_CALLS:
-            raise RuntimeError('Gemini request cap reached (actual HTTP attempts); stopped to protect free-tier quota')
+            raise RuntimeError('Gemini HTTP call safety limit reached; stopped without publishing')
+        if attempt:
+            time.sleep(delays[attempt])
         _calls += 1
+        req = urllib.request.Request(
+            'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent',
+            data=data,
+            headers={'Content-Type':'application/json','x-goog-api-key':KEY},method='POST')
         try:
             with urllib.request.urlopen(req,timeout=90) as resp:
                 raw=json.load(resp)
+            if attempt:
+                print(f'{role}: Gemini recovered on {model} attempt {attempt+1}/{len(models)}',flush=True)
             break
         except urllib.error.HTTPError as e:
-            # Limit the body shown in logs; never print the API key or request headers.
-            msg=e.read(1000).decode('utf-8','replace')
-            if e.code in (408,500,502,503,504) and attempt < len(retry_waits):
-                import random
-                delay=retry_waits[attempt] + random.uniform(0, 2)
-                print(f'{role}: Gemini temporary HTTP {e.code}; attempt {attempt+1}/4. Waiting {delay:.1f}s before retry.', flush=True)
-                time.sleep(delay)
+            # Do not print request headers or the API key.
+            msg=e.read(550).decode('utf-8','replace')
+            if e.code in (401,403,404,429):
+                raise RuntimeError(f'{role}: Gemini HTTP {e.code}; authentication, model access, or free quota requires attention; no paid fallback. {msg[:140]}') from None
+            if e.code in (408,500,502,503,504) and attempt < len(models)-1:
+                print(f'{role}: Gemini HTTP {e.code} on {model}; will retry using free-tier options. ({attempt+1}/{len(models)})',flush=True)
                 continue
-            if e.code in (429,401,403,404):
-                raise RuntimeError(f'{role}: API status {e.code}; check free quota/model access, no paid fallback. {msg[:180]}') from None
-            raise RuntimeError(f'{role}: Gemini HTTP {e.code} after {attempt+1} attempt(s) - {msg[:180]}') from None
-        except (urllib.error.URLError, TimeoutError) as e:
-            if attempt < len(retry_waits):
-                import random
-                delay=retry_waits[attempt] + random.uniform(0, 2)
-                print(f'{role}: transient Gemini connection error; attempt {attempt+1}/4. Waiting {delay:.1f}s before retry.', flush=True)
-                time.sleep(delay)
+            raise RuntimeError(f'{role}: Gemini HTTP {e.code} after {attempt+1} attempts (models tried: {", ".join(dict.fromkeys(models[:attempt+1]))}); no change published. {msg[:140]}') from None
+        except (urllib.error.URLError, TimeoutError):
+            if attempt < len(models)-1:
+                print(f'{role}: Gemini connection error on {model}; waiting for bounded retry ({attempt+1}/{len(models)})',flush=True)
                 continue
-            raise RuntimeError(f'{role}: Gemini connection failed after {attempt+1} attempt(s): {type(e).__name__}') from None
+            raise RuntimeError(f'{role}: Gemini network error after {attempt+1} attempts; no change published') from None
     parts=raw.get('candidates',[{}])[0].get('content',{}).get('parts',[])
     txt=''.join(x.get('text','') for x in parts)
     if not txt.strip():raise RuntimeError(f'{role}: empty Gemini response')
     try:return json.loads(txt)
     except json.JSONDecodeError as e:raise RuntimeError(f'{role}: not valid JSON: {e}') from None
+
+
+def requested_change_scope(issue_body: str) -> str:
+    """Look for costs in the requested change, not in 'do not modify' rules.
+
+    Typical issue templates have a 変更内容 section followed by 条件. Referencing
+    教育費 in the latter must not launch expensive education cost research for
+    unrelated UI/copy requests. If no headings exist, use the whole request.
+    """
+    text=issue_body
+    change=re.search(r'(?m)^\s*(?:#{1,4}\s*)?(?:\*\*)?(?:変更内容|依頼内容|調査内容)(?:\*\*)?\s*[:：]?\s*$',text)
+    if change:
+        text=text[change.end():]
+    limits=re.search(r'(?m)^\s*(?:#{1,4}\s*)?(?:\*\*)?(?:条件|制約|禁止事項|変更禁止事項|変更してはいけない項目)(?:\*\*)?\s*[:：]?\s*$',text)
+    if limits:
+        text=text[:limits.start()]
+    return text.strip()
 
 
 def pretty(data):return json.dumps(data,ensure_ascii=False,indent=2)
@@ -105,11 +128,12 @@ def main():
     # No public search API required; for an unlisted school the agent must ask for a
     # verified source registration, not invent a price or substitute a ministry average.
     source_registry = registry()
-    official_snapshots = collect(request, source_registry)
+    change_scope = requested_change_scope(request)
+    official_snapshots = collect(change_scope, source_registry)
     cost_records = []
     cost_rejected = []
     matched_requested_school = any(
-        any(alias.lower() in request.lower() for alias in [src['school']]+src.get('aliases',[]))
+        any(alias.lower() in change_scope.lower() for alias in [src['school']]+src.get('aliases',[]))
         for src in source_registry.get('sources',[])
     )
     cost_unavailable = [s for s in official_snapshots if s['status'] != 'ok']
