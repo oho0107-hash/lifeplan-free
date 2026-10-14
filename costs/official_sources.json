@@ -1,0 +1,214 @@
+{
+  "schema_version": 2,
+  "notes": "公式料金URLの事例集。全校・全費目を網羅しない。必ず校種・コース・年度・入学形態・所在地を指定。各校は勝手に標準モデルへ反映禁止。補助と支払前費用は別。",
+  "sources": [
+    {
+      "id": "kaisei_jhs_2026",
+      "school": "開成中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "aliases": [
+        "開成",
+        "kaisei"
+      ],
+      "url": "https://kaiseigakuen.jp/about/expenses/",
+      "host": "kaiseigakuen.jp"
+    },
+    {
+      "id": "shibumaku_jhs_2026",
+      "school": "渋谷教育学園幕張中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "aliases": [
+        "渋幕",
+        "渋谷幕張",
+        "shibumaku"
+      ],
+      "url": "https://www.shibumaku.jp/admissions/tuition/",
+      "host": "www.shibumaku.jp"
+    },
+    {
+      "id": "ichikawa_jhs_2026",
+      "school": "市川中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "aliases": [
+        "市川中",
+        "市川学園",
+        "ichikawa"
+      ],
+      "url": "https://www.ichigaku.ac.jp/junior-exam/outline/",
+      "host": "www.ichigaku.ac.jp"
+    },
+    {
+      "id": "waseda_academy_jhs_exam_s6",
+      "school": "早稲田アカデミー 小6 Sコース",
+      "stage": "cram_elementary",
+      "year": null,
+      "aliases": [
+        "早稲アカ",
+        "早稲田アカデミー",
+        "Sコース"
+      ],
+      "url": "https://www.waseda-ac.co.jp/elementary/course/sixth/outline.html",
+      "host": "www.waseda-ac.co.jp"
+    },
+    {
+      "id": "waseda_academy_summer_s6",
+      "school": "早稲田アカデミー 小6 夏期講習",
+      "stage": "cram_elementary",
+      "year": null,
+      "aliases": [
+        "早稲アカ夏",
+        "早稲田アカデミー夏期講習"
+      ],
+      "url": "https://www.waseda-ac.co.jp/elementary/shortcourse_summer/e6.html",
+      "host": "www.waseda-ac.co.jp"
+    },
+    {
+      "id": "meiji_science_2026",
+      "school": "明治大学 理工学部",
+      "stage": "university",
+      "year": 2026,
+      "aliases": [
+        "明治大学",
+        "明治理工",
+        "明治 理工"
+      ],
+      "url": "https://www.meiji.ac.jp/suito/mkmht000002b7evj-att/2026gakubu.pdf",
+      "host": "www.meiji.ac.jp"
+    },
+    {
+      "id": "waseda_science_2026",
+      "school": "早稲田大学 創造理工学部",
+      "stage": "university",
+      "year": 2026,
+      "aliases": [
+        "早稲田大学",
+        "早稲田理工",
+        "創造理工"
+      ],
+      "url": "https://fsci-wu.w.waseda.jp/handbooks/2026/02sozo/pageindices/index88.html",
+      "host": "fsci-wu.w.waseda.jp"
+    },
+    {
+      "id": "higashi_kindergarten_2026",
+      "school": "ひがし幼稚園",
+      "stage": "kindergarten",
+      "year": 2026,
+      "aliases": [
+        "ひがし幼稚園",
+        "ひがし"
+      ],
+      "url": "https://higashi.ac.jp/admission2026/",
+      "host": "higashi.ac.jp",
+      "notes": "幼稚園の事例。実際の希望園でない限り基準費用に採用しない"
+    },
+    {
+      "id": "misato_nursery_2026",
+      "school": "みさとさくらの森 0-2歳児",
+      "stage": "nursery",
+      "year": 2026,
+      "aliases": [
+        "みさとさくらの森",
+        "みさと"
+      ],
+      "url": "https://watanabe.ac.jp/misato/introduction/",
+      "host": "watanabe.ac.jp",
+      "notes": "保育料は世帯・自治体条件により変動。園費以外の費用も未確認"
+    },
+    {
+      "id": "keio_elementary_2026",
+      "school": "慶應義塾幼稚舎",
+      "stage": "elementary",
+      "year": 2026,
+      "aliases": [
+        "慶應義塾幼稚舎",
+        "幼稚舎"
+      ],
+      "url": "https://www.yochisha.keio.ac.jp/admissions/qa/",
+      "host": "www.yochisha.keio.ac.jp",
+      "notes": "著名な私立校の事例。公立小学校や中価格帯の費用を置き換えない"
+    },
+    {
+      "id": "kaisei_hs_2026",
+      "school": "開成高等学校",
+      "stage": "high_school",
+      "year": 2026,
+      "aliases": [
+        "開成高校",
+        "開成高等学校"
+      ],
+      "url": "https://kaiseigakuen.jp/about/expenses/",
+      "host": "kaiseigakuen.jp",
+      "notes": "同じ公式ページに中学高校の金額があるため学校区分に注意"
+    },
+    {
+      "id": "keio_hs_2026",
+      "school": "慶應義塾高等学校",
+      "stage": "high_school",
+      "year": 2026,
+      "aliases": [
+        "慶應義塾高等学校",
+        "慶應高校"
+      ],
+      "url": "https://www.keio.ac.jp/ja/admissions/fee/affiliated-school/",
+      "host": "www.keio.ac.jp",
+      "notes": "同じ公式ページに複数校の学費。対象の行だけを採用"
+    },
+    {
+      "id": "kumon_lessons_2026",
+      "school": "公文式 会費",
+      "stage": "lessons",
+      "year": 2026,
+      "aliases": [
+        "公文式",
+        "KUMON",
+        "くもん"
+      ],
+      "url": "https://www.kumon.ne.jp/kaihi/",
+      "host": "www.kumon.ne.jp",
+      "notes": "会費は学年・教室所在地・教科数で変わる"
+    },
+    {
+      "id": "kawai_preparatory_2026",
+      "school": "河合塾 大学受験科",
+      "stage": "prep_school",
+      "year": 2026,
+      "aliases": [
+        "河合塾",
+        "大学受験科",
+        "予備校"
+      ],
+      "url": "https://www.kawai-juku.ac.jp/daiju/apply/",
+      "host": "www.kawai-juku.ac.jp",
+      "notes": "予備校は高卒生か現役生か・校舎・コースで異なる"
+    },
+    {
+      "id": "sundai_hs_course_2026",
+      "school": "駿台 高校生クラス",
+      "stage": "cram_high_school",
+      "year": 2026,
+      "aliases": [
+        "駿台",
+        "高校生クラス"
+      ],
+      "url": "https://www2.sundai.ac.jp/highschool/",
+      "host": "www2.sundai.ac.jp",
+      "notes": "通期受講のコース・校舎・期間で金額が変わる"
+    },
+    {
+      "id": "sundai_prep_2026",
+      "school": "駿台 高卒生クラス",
+      "stage": "prep_school",
+      "year": 2026,
+      "aliases": [
+        "駿台予備学校",
+        "高卒クラス"
+      ],
+      "url": "https://www2.sundai.ac.jp/lp/value/",
+      "host": "www2.sundai.ac.jp",
+      "notes": "掲載価格帯をそのまま個人の基本費用に使用しない"
+    }
+  ]
+}

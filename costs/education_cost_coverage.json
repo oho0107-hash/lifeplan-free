@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "description": "個別の実費を検証するための費目チェックリスト。金額は含まない。未確認は0円として集計しない。学校・学年・地区・コース別に確認する。",
+  "stages": {
+    "nursery": {"label": "保育園・認定こども園（0〜2歳）", "items": ["admission", "tuition", "meals", "supplies", "extended_care", "transport", "events"]},
+    "kindergarten": {"label": "幼稚園・認定こども園（3〜5歳）", "items": ["admission", "tuition", "facility", "meals", "uniform", "materials", "transport", "extended_care", "events"]},
+    "elementary": {"label": "小学校", "items": ["admission", "tuition", "facility", "meals", "uniform", "materials", "device", "trip", "transport", "activity", "exams"]},
+    "junior_high": {"label": "中学校", "items": ["admission", "tuition", "facility", "meals", "uniform", "materials", "device", "trip", "transport", "activity", "exams"]},
+    "high_school": {"label": "高校", "items": ["admission", "tuition", "facility", "meals", "uniform", "materials", "device", "trip", "transport", "activity", "exams"]},
+    "university": {"label": "大学・学部学科別", "items": ["admission", "tuition", "facility", "lab", "materials", "device", "activity", "transport", "exams"]},
+    "cram_elementary": {"label": "小学生・中学受験塾", "items": ["enrollment", "tuition", "materials", "testing", "seasonal_course", "special_course", "facility", "transport"]},
+    "cram_junior_high": {"label": "中学生・高校受験塾", "items": ["enrollment", "tuition", "materials", "testing", "seasonal_course", "special_course", "facility", "transport"]},
+    "cram_high_school": {"label": "高校生・大学受験塾", "items": ["enrollment", "tuition", "materials", "testing", "seasonal_course", "special_course", "facility", "transport"]},
+    "prep_school": {"label": "予備校・高卒生コース", "items": ["enrollment", "tuition", "materials", "testing", "seasonal_course", "special_course", "facility", "transport"]},
+    "private_tutor": {"label": "家庭教師・個別指導", "items": ["enrollment", "tuition", "materials", "transport", "facility"]},
+    "lessons": {"label": "習い事", "items": ["enrollment", "tuition", "materials", "equipment", "events", "transport"]},
+    "exam": {"label": "入試・併願・受験関連", "items": ["exams", "travel", "application", "deposit"]},
+    "housing": {"label": "大学生の一人暮らし", "items": ["rent", "management", "deposit", "moving", "utilities", "food", "communication", "insurance", "transport"]}
+  },
+  "item_labels": {
+    "admission": "入学・入園金", "tuition": "保育料・授業料・通常受講料", "facility": "施設・教育充実・管理費", "meals": "給食・食費", "uniform": "制服・体操服", "materials": "教材・教科書・文具", "device": "指定端末・PC", "trip": "修学旅行・研修旅行", "transport": "通学・通塾交通費", "activity": "学校会費・部活動", "exams": "入試・受験料", "lab": "実験・実習費", "enrollment": "入塾金", "testing": "模試・確認テスト", "seasonal_course": "春・夏・冬の講習", "special_course": "特訓・志望校別講座", "equipment": "習い事の道具・用具", "extended_care": "延長保育", "events": "行事・発表会費", "supplies": "保育用品", "travel": "遠方受験の交通・宿泊", "application": "出願書類・手数料", "deposit": "入学金等の併願先前払い・敷金・保証金", "rent": "家賃", "management": "管理費・共益費", "moving": "引越費", "utilities": "光熱・水道費", "food": "生活食費", "communication": "通信費", "insurance": "保険・更新費"
+  },
+  "counting_rules": [
+    "入学時1回の費用を毎年計上しない",
+    "授業料に教材・模試が含まれる場合は追加計上しない",
+    "塾の通常授業と季節講習・特訓は同一期間かつ料金に含まれるかを調べる",
+    "学費の表に記載された合計行とその内訳行を同時に加算しない",
+    "中高一貫校の内部進学時の入学金は一般入学と区別する",
+    "補助金・割引の適用は実費集計の後、資格確認付きで別計算",
+    "生活費に計上済みの大学一人暮らし費用は教育費として二重計上しない",
+    "任意寄付・複数進学先・全受験校の合格後納付金を無条件加算しない",
+    "将来年度は直近の実費と本人が承認した物価上昇仮定を区別する"
+  ]
+}
