@@ -23,9 +23,9 @@
 <div class="card"><div class="chart-head"><h2>子ども別の教育費</h2><div class="legend">通園～大学・概算／単位：万円</div></div><p class="sub">実費＝学費・習い事等 − 補助金（学費控除は0円を下限）。負担・補助は現行制度の確定額ではありません。</p><div class="table-wrap"><table><thead><tr><th>子ども</th><th>区分</th><th>総費用</th><th>補助額</th><th>実費</th></tr></thead><tbody id="eduBreakdown"></tbody></table></div></div>
 <div class="card"><div class="chart-head"><h2>年ごとのキャッシュフロー</h2><div class="toolbar"><select id="rowFilter" aria-label="表示年の絞り込み"><option value="all">すべての年</option><option value="debt">借入が残る年</option><option value="deficit">年間収支が赤字の年</option></select><button class="secondary" type="button" id="csv">CSV保存</button></div></div><p class="sub">横にスクロールして、家族の年齢・収支・残高を確認できます。金額は万円表示。</p><div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div></div>
 <div class="card"><details><summary>住宅ローンの返済予定を見る</summary><p>年返済額を月割りするv24の近似計算です。年末金利・年間返済額・年末残高を表示します。</p><div class="table-wrap"><table><thead><tr><th>年</th><th>年末金利</th><th>通常返済</th><th>繰上返済</th><th>うち利息</th><th>年末残高</th></tr></thead><tbody id="mortgageBody"></tbody></table></div><p id="mortgageTail"></p></details></div>
-<div class="card"><details><summary>このシミュレーションの計算前提</summary><p>資金不足時は投資を取り崩し、それでも足りない額を借入残高に計上します。借入利息は0％。後年の黒字は返済に充て、投資追加は手元資金の範囲内で行います。</p><p>給与・教育費・児童手当・年金・ローンはv24の仮定を引き継いでいます。教育費は暦年の年齢で区分し、画面の学年表示とは一致しない場合があります。夫は60歳以降に年360万円を加算、出産年の妻給与は0円。退職金「なし」の場合は給与終了年を設定しない仕様です。補助額や制度適用条件は簡略化されています。</p><p>現在の残高を計算開始年の期首残高として扱い、当年も1年分を計算します。年度途中の残高を使う場合、年初残高に合わせてください。純資産は金融資産と資金不足借入の差額で、不動産や住宅ローン残債は含みません。</p></details></div>
+<div class="card"><details><summary>このシミュレーションの計算前提</summary><p>資金不足時は投資を取り崩し、それでも足りない額を借入残高に計上します。借入利息は0％。後年の黒字は返済に充て、投資追加は手元資金の範囲内で行います。</p><p>教育費・学年は4月進級の月割りに修正しました。児童手当は2026年制度の受給月数をベースに試算し、実際の振込月は反映していません。年金は受給開始年齢と手取り年額を手入力します（未入力なら0円）。大学の減免は授業料上限だけを国公立・私立で分け、扶養や申請の判断は簡略化しています。育休給付、保育開始月、高校補助、入学金、住宅ローンなどは引き続き概算です。</p><p>現在の残高を計算開始年の期首残高として扱い、当年も1年分を計算します。年度途中の残高を使う場合、年初残高に合わせてください。純資産は金融資産と資金不足借入の差額で、不動産や住宅ローン残債は含みません。</p></details></div>
 </div></section>
-<div class="shell"><p class="note">【計算上の注意】このバージョンは以前のGAS v25の概算式を移植し、住宅ローン条件を入力方式に変更したものです。住宅ローンの実返済表、退職・育休、年金、児童手当、大学・高校無償化は最新制度の厳密な適用ではありません。資産推移も住宅ローン残債を控除した実質純資産ではありません。意思決定の前に必ず専門家の確認を受けてください。</p></div></main><footer>LIFE /　家族の選択に、見通しを。</footer>
+<div class="shell"><p class="note">【計算上の注意】v1.1では学年・年金自動加算・児童手当月数・大学授業料上限の一部を修正しました。ただし住宅ローン、育休、高校無償化、大学の扶養・申請・学業・対象校・入学金などは概算です。資産推移も住宅ローン残債を控除した実質純資産ではありません。意思決定の前に必ず専門家の確認を受けてください。</p></div></main><footer>LIFE /　家族の選択に、見通しを。</footer>
 <script>
 /* LIFE Financial Studio — portable, local-only calculation engine.
  * Port of 2026-10-08 GAS v25 assumptions; NOT a validated tax/benefit forecast.
@@ -44,12 +44,47 @@ const date=s=>{
 const pmt=(r,n,p)=>!p?0:n<=0?0:!r?p/n:p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
 function students(info){return [1,2,3,4].filter(i=>i<4||info.kid4_has==='yes').map(i=>({key:'kid'+i,name:STUDENT_NAMES[i-1],birth:date(info['kid'+i+'_birth']),order:i}));}
 function category(a){return a<0?'なし':a<3?'0-2歳':a<6?'3-5歳':a<12?'小学校':a<15?'中学校':a<18?'高校':a<22?'大学':'なし';}
-function grade(i){return i< -2?'-':i<1?'幼保':i<=6?'小'+i:i<=9?'中'+(i-6):i<=12?'高'+(i-9):i<=16?'大'+(i-12):'卒';}
+function grade(i){return i<-2?'幼保':i<=0?'幼保':i<=6?'小'+i:i<=9?'中'+(i-6):i<=12?'高'+(i-9):i<=16?'大'+(i-12):'卒';}
+// 4月2日〜翌年4月1日生まれを一つの学年にする。schoolYearは暦年ではなく4月開始年度。
+function cohortYear(birth){return birth.getFullYear()-((birth.getMonth()===3&&birth.getDate()===1)||birth.getMonth()<3?1:0);}
+function gradeAt(birth,year,month){return (month<4?year-1:year)-cohortYear(birth)-6;}
+function stageForGrade(g){return g<=-3?'0-2歳':g<=0?'3-5歳':g<=6?'小学校':g<=9?'中学校':g<=12?'高校':g<=16?'大学':'なし';}
+const monthIndex=(y,m)=>y*12+m;
+// 誕生月の翌月から、18歳到達後の最初の3月31日までを月単位で集計。
+function fiscalEndForAge(birth,age){const yr=birth.getFullYear()+age;return ((birth.getMonth()<3||(birth.getMonth()===3&&birth.getDate()===1))?yr:yr+1)*12+3;}
+function allowanceForMonth(kids,child,year,month){
+  const born=monthIndex(child.birth.getFullYear(),child.birth.getMonth()+1);
+  const now=monthIndex(year,month);
+  if(now<=born||now>fiscalEndForAge(child.birth,18))return 0;
+  // 扶養・経済的負担が継続していることを仮定。実際は確認が必要。
+  const eligible=kids.filter(k=>k.birth&&monthIndex(k.birth.getFullYear(),k.birth.getMonth()+1)<=now&&now<=fiscalEndForAge(k.birth,22));
+  const elder=eligible.filter(k=>k.birth.getTime()<child.birth.getTime()||(k.birth.getTime()===child.birth.getTime()&&k.order<child.order)).length;
+  if(elder>=2)return 30000;
+  const third=monthIndex(child.birth.getFullYear()+3,child.birth.getMonth()+1);
+  return now<=third?15000:10000;
+}
+function yearlyAllowance(info,kids,year){
+  if(info.child_allowance_mode!=='yes')return 0;
+  let total=0;for(let month=1;month<=12;month++)for(const child of kids)if(child.birth)total+=allowanceForMonth(kids,child,year,month);
+  return total;
+}
+function yearlyPension(info,person,birth,year){
+  const annual=num(info[person+'_pension_amount']);if(!annual)return 0;
+  const startingAge=info[person+'_pension_age']===''||info[person+'_pension_age']===undefined?65:num(info[person+'_pension_age']);
+  // 老齢年金は誕生日前日の65歳到達月の翌月から権利が発生する概算（繰上げ・繰下げは額を入力）。
+  let eligibilityYear=birth.getFullYear()+startingAge,eligibilityMonth=birth.getMonth()+1;
+  if(birth.getDate()===1){eligibilityMonth--;if(eligibilityMonth===0){eligibilityMonth=12;eligibilityYear--;}}
+  let amount=0;for(let month=1;month<=12;month++)if(monthIndex(year,month)>monthIndex(eligibilityYear,eligibilityMonth))amount+=annual/12;
+  return amount;
+}
 function validate(info){
   for(const k of ['husband_birth','wife_birth'])if(!date(info[k]))throw Error(k+'：日付が未入力または不正です');
   if(info.kid4_has==='yes'&&!date(info.kid4_birth))throw Error('4人目の生年月日が未入力です');
   for(const k of ['kid1_birth','kid2_birth','kid3_birth'])if(info[k]&&!date(info[k]))throw Error(k+'：日付が不正です');
   for(const p of ['husband','wife']){
+    const pensionAge=info[p+'_pension_age'];
+    if(pensionAge!==undefined&&pensionAge!==''&&(!Number.isInteger(Number(pensionAge))||num(pensionAge)<60||num(pensionAge)>75))throw Error(p+'の年金受給開始年齢は60〜75歳で指定してください');
+    if(num(info[p+'_pension_amount'])<0)throw Error(p+'の年金年額は0円以上にしてください');
     const g=num(info[p+'_income_growth']);
     if(g<=-100||g>100||Math.abs(g*10-Math.round(g*10))>1e-7)throw Error(p+'の収入増減率を確認してください');
   }
@@ -77,28 +112,49 @@ function validate(info){
   }
 }
 function education(info,startYear,duration){
-  const result=[],kids=students(info),ages={};
-  for(let j=0;j<duration;j++)for(const child of kids){
-    if(!child.birth)continue;const year=startYear+j,age=year-child.birth.getFullYear(),cat=category(age);if(cat==='なし')continue;
-    result.push({year,child:child.name,order:child.order,age,stage:cat,key:child.key,tuition:0,lessons:0,subsidy:0,net:0});
-    (ages[year]??=[]).push(age);
-  }
-  const cost={jhs:{public:500000,private:1200000},hs:{public:600000,private:1000000},univ:{nat_lit:1200000,nat_sci:1400000,pri_lit:1600000,pri_sci:1800000}};
+  // 学年・費用区分は毎月4月に更新。暦年の金額は1〜12月の在籍費用を集計する。
+  const result=[],kids=students(info),cost={jhs:{public:500000,private:1200000},hs:{public:600000,private:1000000},univ:{nat_lit:1200000,nat_sci:1400000,pri_lit:1600000,pri_sci:1800000}};
   const lessons={'3-5歳':{low:0,normal:120000,high:360000},'小学校':{low:60000,normal:240000,high:480000},'中学校':{low:120000,normal:360000,high:840000},'高校':{low:120000,normal:480000,high:1000000}};
-  for(const r of result){
-    const k=r.key,cat=r.stage;let tuition=0,subsidy=0;
-    if(cat==='0-2歳')tuition=r.order===1?num(info.hoikuen_max_month)*12:r.order===2?num(info.hoikuen_max_month)*6:0;
-    if(cat==='3-5歳')tuition=info.age3to5_type==='yochien'?240000:0;
-    if(cat==='小学校')tuition=300000;
-    if(cat==='中学校')tuition=cost.jhs[info[k+'_jhs_type']]??cost.jhs.public;
-    if(cat==='高校'){tuition=cost.hs[info[k+'_hs_type']]??cost.hs.public;if(info.hs_free_use==='yes')subsidy=457000;}
-    if(cat==='大学'){
-      tuition=cost.univ[info[k+'_univ_type']]??cost.univ.nat_lit;
-      if(info[k+'_univ_living']==='alone')tuition+=1200000;
-      if(info.univ_free_use==='yes'&&ages[r.year].filter(a=>a<=21).length>=3)subsidy=700000;
+  for(let j=0;j<duration;j++){
+    const year=startYear+j;
+    for(const child of kids){
+      if(!child.birth)continue;
+      const byStage=new Map();
+      for(let month=1;month<=12;month++){
+        // 出生前には通園料などを発生させない。
+        if(monthIndex(year,month)<monthIndex(child.birth.getFullYear(),child.birth.getMonth()+1))continue;
+        const g=gradeAt(child.birth,year,month),cat=stageForGrade(g);
+        if(cat==='なし')continue;
+        const row=byStage.get(cat)||{year,child:child.name,order:child.order,age:year-child.birth.getFullYear(),stage:cat,key:child.key,tuition:0,lessons:0,subsidy:0,net:0,months:0};
+        const k=child.key,univType=info[k+'_univ_type']||'nat_lit';let monthTuition=0,monthSubsidy=0;
+        if(cat==='0-2歳')monthTuition=child.order===1?num(info.hoikuen_max_month):child.order===2?num(info.hoikuen_max_month)/2:0;
+        if(cat==='3-5歳')monthTuition=info.age3to5_type==='yochien'?240000/12:0;
+        if(cat==='小学校')monthTuition=300000/12;
+        if(cat==='中学校')monthTuition=(cost.jhs[info[k+'_jhs_type']]??cost.jhs.public)/12;
+        if(cat==='高校'){
+          monthTuition=(cost.hs[info[k+'_hs_type']]??cost.hs.public)/12;
+          if(info.hs_free_use==='yes')monthSubsidy=Math.min(monthTuition,457000/12); // 高校補助は旧概算のまま
+        }
+        if(cat==='大学'){
+          const annualTuition=cost.univ[univType]??cost.univ.nat_lit;
+          monthTuition=annualTuition/12+(info[k+'_univ_living']==='alone'?1200000/12:0);
+          const dependentCount=kids.filter(other=>other.birth&&monthIndex(other.birth.getFullYear(),other.birth.getMonth()+1)<=monthIndex(year,month)&&monthIndex(year,month)<=fiscalEndForAge(other.birth,22)).length;
+          // 公的制度は税情報・申請・学業要件等で判定される。ここでは人数のみの概算。
+          if(info.univ_free_use==='yes'&&year>=2025&&dependentCount>=3){
+            const cap=univType.startsWith('pri_')?700000:540000;
+            monthSubsidy=Math.min(annualTuition,cap)/12; // 家賃等を減免対象とみなさない
+          }
+        }
+        const lesson=(lessons[cat]?.[info.extra_activity_level||'normal']??0)/12;
+        row.tuition+=monthTuition;row.subsidy+=monthSubsidy;row.lessons+=lesson;row.months++;
+        byStage.set(cat,row);
+      }
+      for(const row of byStage.values()){
+        row.tuition=Math.round(row.tuition);row.subsidy=Math.round(row.subsidy);row.lessons=Math.round(row.lessons);
+        row.net=Math.max(0,row.tuition-row.subsidy)+row.lessons;
+        result.push(row);
+      }
     }
-    r.tuition=tuition;r.subsidy=subsidy;r.lessons=lessons[cat]?.[info.extra_activity_level||'normal']??0;
-    r.net=Math.max(0,tuition-subsidy)+r.lessons;
   }
   return result;
 }
@@ -154,11 +210,11 @@ function calculate(info,{startYear=new Date().getFullYear()}={}){
       return base*Math.pow(1+g,Math.max(0,peak-(age-i)))*Math.pow(1-g,age-peak);
     };
     let income=salary('husband',ha,hRet)+salary('wife',wa,wRet);
-    if(ha>=60)income+=3600000;
+    income+=yearlyPension(info,'husband',hBirth,year)+yearlyPension(info,'wife',wBirth,year);
     if(year===hRet)income+=num(info.husband_retire_amount);
     if(year===wRet)income+=num(info.wife_retire_amount);
     if(year===num(info.extra_income_year))income+=num(info.extra_income_amount);
-    if(info.child_allowance_mode==='yes')kids.forEach(k=>{if(k.birth){const age=year-k.birth.getFullYear();if(age>=0&&age<18)income+=(k.order>=3?30000:age<3?15000:10000)*12;}});
+    income+=yearlyAllowance(info,kids,year);
     income=Math.round(income);
     const base=num(info.living_cost_annual);let living=base;
     if(year<lastGrad){const years=year>=k1Univ?Math.max(0,k1Univ-startYear):i;living=base*Math.pow(1+num(info.living_cost_growth)/100,years);
@@ -174,7 +230,7 @@ function calculate(info,{startYear=new Date().getFullYear()}={}){
     const assets=settleAssets(cash,invest,income-expenses,year>=wRet?0:num(info.annual_investment),num(info.investment_return));cash=assets.cash;invest=assets.invest;
     const labels=[1,2,3,4].map(order=>{
       const k=kids.find(k=>k.order===order);if(!k?.birth)return '-';const a=year-k.birth.getFullYear();if(a<0)return '出生前';
-      const fy=k.birth.getFullYear()-(k.birth.getMonth()<3?1:0);return a+'歳('+grade(year-fy-6)+')';
+      return a+'歳('+grade(gradeAt(k.birth,year,4))+')';
     });
     cashflow.push([year,ha,wa,...labels,income,educationCost,living,house,car,travel,expenses,Math.round(invest),Math.round(cash),Math.round(assets.total),Math.round(assets.debt),income-expenses,Math.round(assets.contribution)]);
   }
@@ -187,12 +243,13 @@ function calculate(info,{startYear=new Date().getFullYear()}={}){
       breakdown.push({child:child.name,stage,gross:rows.reduce((a,r)=>a+r.tuition+r.lessons,0),subsidy:rows.reduce((a,r)=>a+r.subsidy,0),net:rows.reduce((a,r)=>a+r.net,0)});
     }
   }
-  return {status:'OK',cashflow,mortgageSchedule:mortgage,eduSummary:[...byYear].sort((a,b)=>a[0]-b[0]),educationBreakdown:breakdown,kid4_has:info.kid4_has==='yes',startYear,assumptionVersion:'GAS-v25-approx'};
+  return {status:'OK',cashflow,mortgageSchedule:mortgage,eduSummary:[...byYear].sort((a,b)=>a[0]-b[0]),educationBreakdown:breakdown,kid4_has:info.kid4_has==='yes',startYear,assumptionVersion:'v1.1-policy-corrections-remaining-approximations'};
 }
-const api={calculate,validate,education,mortgageSchedule,settleAssets,category,version:'1.0.0-v25-port'};
+const api={calculate,validate,education,mortgageSchedule,settleAssets,category,gradeAt,yearlyAllowance,yearlyPension,version:'1.1.0-policy-corrections'};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 root.LifeEngine=api;
 })(typeof window!=='undefined'?window:globalThis);
+
 
 
 'use strict';
@@ -212,9 +269,9 @@ function money(k,l,o={}){return field(k,l,'number',{unit:'円',...o});}
 function select(k,l,choices,o={}){return field(k,l,'select',{choices,...o});}
 function createForm(){
   let s=section('family','01','家族のこと'),g=grid(s);g.append(field('husband_birth','夫の生年月日','date',{required:true}),field('wife_birth','妻の生年月日','date',{required:true}));['長男','次男','三男'].forEach((t,i)=>g.append(field('kid'+(i+1)+'_birth',t+'の生年月日','date')));g.append(select('kid4_has','4人目の予定',has));const k4=grid(s);k4.id='kid4BirthGroup';k4.style.marginTop='18px';k4.append(field('kid4_birth','四男の生年月日・予定日','date'));
-  s=section('income','02','収入と働き方');['husband','wife'].forEach((p,i)=>{heading(s,i?'妻の収入':'夫の収入');g=grid(s);g.append(money(p+'_month_net','毎月の手取り'),money(p+'_bonus_net','年間の手取り賞与'),field(p+'_income_growth','給与の年間上昇率','number',{unit:'％',step:'0.1',min:'-99.9',max:'100',placeholder:'例：1.5',hint:'小数第1位まで入力できます'}),field(p+'_peak_age','収入がピークになる年齢','number',{unit:'歳',value:60,min:1,max:100}),select(p+'_retire_has','退職金',has),field(p+'_retire_age','退職金受取・給与終了年齢','number',{unit:'歳',value:65,min:1,max:100}),money(p+'_retire_amount','退職金額'));});heading(s,'その他の収入');g=grid(s);g.append(field('extra_income_year','臨時収入を受け取る年','number',{unit:'年'}),money('extra_income_amount','臨時収入額'),select('child_allowance_mode','児童手当を収入に含める',yes));note(s,'v24の前提：退職金「なし」では給与の終了年が設定されません。夫は60歳以降に年360万円を加算し、妻は子どもの出生年の給与を0円とします。');
+  s=section('income','02','収入と働き方');['husband','wife'].forEach((p,i)=>{heading(s,i?'妻の収入':'夫の収入');g=grid(s);g.append(money(p+'_month_net','毎月の手取り'),money(p+'_bonus_net','年間の手取り賞与'),field(p+'_income_growth','給与の年間上昇率','number',{unit:'％',step:'0.1',min:'-99.9',max:'100',placeholder:'例：1.5',hint:'小数第1位まで入力できます'}),field(p+'_peak_age','収入がピークになる年齢','number',{unit:'歳',value:60,min:1,max:100}),select(p+'_retire_has','退職金',has),field(p+'_retire_age','退職金受取・給与終了年齢','number',{unit:'歳',value:65,min:1,max:100}),money(p+'_retire_amount','退職金額'),field(p+'_pension_age','年金の受給開始年齢','number',{unit:'歳',value:65,min:60,max:75}),money(p+'_pension_amount','年金の年間手取り額',{hint:'未入力なら0円。受給見込額を自分で入力（夫・妻それぞれ）'}));});heading(s,'その他の収入');g=grid(s);g.append(field('extra_income_year','臨時収入を受け取る年','number',{unit:'年'}),money('extra_income_amount','臨時収入額'),select('child_allowance_mode','児童手当を収入に含める',yes));note(s,'年金は入力した開始年齢・年額から月割りします。未入力なら加算しません。年金の概算は支給要件・繰上げ・税金等を自動計算しません。妻は出産年の給与を0円とする旧概算を引き継ぐため、育休給付は今後の検討対象です。');
   s=section('education','03','教育と進路');g=grid(s);g.append(select('age3to5_type','3〜5歳の通園先',[['hoikuen','保育園'],['yochien','幼稚園']]),money('hoikuen_max_month','保育園の月額上限'),select('extra_activity_level','習い事・塾の水準',[['low','少なめ'],['normal','標準'],['high','多め']],{value:'normal'}),select('hs_free_use','高校の補助を適用',yes),select('univ_free_use','多子世帯の大学補助を適用',yes));
-  ['長男','次男','三男','四男'].forEach((t,i)=>{const wrap=document.createElement('div');wrap.id='kid'+(i+1)+'Education';s.append(wrap);heading(wrap,t+'の進路');const gg=grid(wrap),p='kid'+(i+1);gg.append(select(p+'_jhs_type','中学校',pub),select(p+'_hs_type','高校',pub),select(p+'_univ_type','大学',[['nat_lit','国公立・文系'],['nat_sci','国公立・理系'],['pri_lit','私立・文系'],['pri_sci','私立・理系']]),select(p+'_univ_living','大学での暮らし',[['home','実家から通学'],['alone','一人暮らし']]))});note(s,'教育費・補助金はv24の概算を使用。大学の一人暮らしは年120万円を加算します。');
+  ['長男','次男','三男','四男'].forEach((t,i)=>{const wrap=document.createElement('div');wrap.id='kid'+(i+1)+'Education';s.append(wrap);heading(wrap,t+'の進路');const gg=grid(wrap),p='kid'+(i+1);gg.append(select(p+'_jhs_type','中学校',pub),select(p+'_hs_type','高校',pub),select(p+'_univ_type','大学',[['nat_lit','国公立・文系'],['nat_sci','国公立・理系'],['pri_lit','私立・文系'],['pri_sci','私立・理系']]),select(p+'_univ_living','大学での暮らし',[['home','実家から通学'],['alone','一人暮らし']]))});note(s,'2026年基準の学年（4月2日〜翌4月1日生まれが同学年）を月割りで集計。大学は授業料減免上限を国公立54万円・私立70万円/年とし、人数で簡易判定します。実際の扶養・申請・対象校・学業要件・入学金などは未反映。高校補助額も旧概算です。');
   s=section('assets','04','貯蓄と投資');g=grid(s);g.append(money('current_savings','現金・預貯金の残高',{signed:true,hint:'資金不足借入がある場合は負数。計算開始年の期首残高。'}),money('current_invest_balance','投資の残高'),money('annual_investment','年間の投資追加予定額'),field('investment_return','投資の年間利回り','number',{unit:'％',step:'0.1',signed:true,min:-100}));note(s,'資金が不足したら投資を取り崩し、不足分を借入としてマイナス表示。借入利息は0％です。投資追加は手元資金を上限とし、妻の退職年から停止します。');
   s=section('living','05','暮らしと楽しみ');g=grid(s);g.append(money('living_cost_annual','年間の生活費'),field('living_cost_growth','生活費の年間増加率','number',{unit:'％',step:'0.1',signed:true,min:-100}),money('living_reduce_home','大学・実家通学時の生活費減額',{unit:'円/月',hint:'子ども1人あたり・月額'}),money('living_reduce_alone','大学・一人暮らし時の生活費減額',{unit:'円/月',hint:'子ども1人あたり・月額'}),money('travel_cost','年間の旅行費'),select('car_has','車の買い替え',has),field('car_replace_freq','車の買い替え間隔','number',{unit:'年'}),money('car_price','車の購入費'));note(s,'夫が75歳になる年から、車の購入費と旅行費は0円になります。買い替えは計算開始年から指定年数ごとです。');
   s=section('housing','06','住まいとローン');note(s,'借入額・返済条件はこの画面で設定します。公開ソースにご家庭の借入額や返済予定を埋め込まないため、初回はご自身で入力してください。ボーナス分は年額を12分割して計算する近似です。');
