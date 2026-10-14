@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIFE / ライフプラン</title>
+<style>
+:root{--bg:#f2f5f5;--ink:#17323c;--muted:#617780;--line:#d9e3e6;--mint:#b9f1d9;--accent:#087f71;--red:#b93151;--navy:#102c39}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;font-size:14px}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:wait;opacity:.5}a{color:inherit}.shell{max-width:1240px;margin:auto;padding:0 32px}header{border-bottom:1px solid var(--line);background:#fff}.topbar{height:76px;display:flex;align-items:center;justify-content:space-between}.brand{font-weight:900;font-size:25px;letter-spacing:5px}.brand span{color:var(--accent)}.edition{font-size:11px;letter-spacing:2px;color:var(--muted)}.hero{background:var(--navy);color:#fff;border-radius:24px;padding:38px 42px;position:relative;overflow:hidden;margin:28px 0}.hero:after{content:"";position:absolute;width:280px;height:280px;right:-70px;top:-95px;border:50px solid #b9f1d915;border-radius:50%;pointer-events:none}.eyebrow{letter-spacing:2.5px;font-size:11px;font-weight:700;color:var(--accent)}.hero .eyebrow{color:var(--mint)}h1{font-size:32px;letter-spacing:.02em;line-height:1.5;margin:12px 0}p{line-height:1.8}.hero p{color:#bed0d7;max-width:700px;margin-bottom:0}.tabs{display:flex;gap:8px;margin-bottom:24px}.tab{border:0;background:transparent;border-radius:12px;padding:13px 23px;color:var(--muted);font-weight:700}.tab.active{background:var(--navy);color:#fff}.layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:24px}.side{position:sticky;top:20px;align-self:start}.side a{display:block;padding:12px 14px;text-decoration:none;border-radius:10px;color:var(--muted);font-size:13px}.side a:hover{background:#e2ebeb;color:var(--ink)}.side strong{display:block;font-size:11px;letter-spacing:2px;padding:10px 14px;color:var(--accent)}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;margin-bottom:18px;scroll-margin-top:20px}.section-head{display:flex;align-items:center;gap:12px;margin-bottom:22px}.num{font-size:12px;font-weight:800;background:#e6f6ef;color:var(--accent);border-radius:10px;padding:9px}h2{font-size:19px;margin:0}h3{font-size:14px;margin:26px 0 15px}.sub{font-size:12px;color:var(--muted);margin:8px 0 20px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px}.field label{display:block;font-size:12px;font-weight:650;margin-bottom:9px}.control{position:relative}.control input,.control select{width:100%;height:48px;border:1px solid var(--line);border-radius:10px;background:#f9fbfb;color:var(--ink);padding:0 14px;outline:none;min-width:0}.control input.has-unit{padding-right:62px}.control input:focus,.control select:focus{border-color:var(--accent);box-shadow:0 0 0 3px #087f7115}.unit{position:absolute;right:14px;top:16px;color:var(--muted);font-size:11px;pointer-events:none}.hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6}.full{grid-column:1/-1}.note{background:#eff7f5;border:1px solid #d6e9e2;border-radius:12px;padding:14px 17px;color:#42685f;font-size:12px;line-height:1.9}.actions{position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:15px;background:#f2f5f5f5;padding:18px 0;backdrop-filter:blur(10px);z-index:4}.primary{border:0;border-radius:12px;background:var(--navy);color:#fff;padding:16px 26px;font-weight:700}.primary span{color:var(--mint);margin-left:22px}.secondary{border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);padding:11px 17px}.status{font-size:12px;color:var(--muted);line-height:1.7}.status.error{color:var(--red)}[hidden]{display:none!important}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}.kpi.featured{background:var(--navy);color:#fff}.kpi label{display:block;font-size:11px;color:var(--muted);margin-bottom:14px}.kpi.featured label{color:#bfd6df}.kpi strong{display:block;font-size:26px;font-weight:700;letter-spacing:-.8px;white-space:nowrap}.kpi small{display:block;margin-top:12px;font-size:11px;color:var(--muted)}.kpi.featured small{color:#bfd6df}.negative{color:var(--red)!important}.kpi.featured .negative{color:#ff9bb0!important}.chart-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.legend{font-size:11px;color:var(--muted)}.legend b{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:5px}.chart{width:100%;height:300px;display:block;margin-top:15px}.chart text{fill:#71838b;font-size:11px}.chart-note{font-size:11px;color:var(--muted)}.result-title{display:flex;justify-content:space-between;align-items:center;margin:10px 0 18px}.table-wrap{overflow:auto;max-height:540px;border-radius:12px;border:1px solid var(--line);margin-top:18px}table{border-collapse:separate;border-spacing:0;white-space:nowrap;width:100%;font-size:12px;font-variant-numeric:tabular-nums}th{background:var(--navy);color:#fff;font-size:11px;position:sticky;top:0;z-index:2}td,th{padding:14px 16px;text-align:right;border-bottom:1px solid var(--line)}td:first-child,th:first-child{text-align:left;position:sticky;left:0;z-index:1}th:first-child{z-index:3}td{background:#fff}tr:nth-child(even) td{background:#f5f8f8}tr.debt td{background:#fff1f4}td:first-child{font-weight:700}.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.toolbar select{padding:10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}details summary{cursor:pointer;font-weight:600;font-size:13px}details p{color:var(--muted);font-size:12px}.empty{text-align:center;padding:70px 20px;color:var(--muted)}footer{font-size:11px;color:var(--muted);text-align:center;padding:30px 0 40px}.rate-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}.alert{border-left:3px solid var(--red);background:#fff1f4;padding:14px 18px;border-radius:8px;margin-bottom:20px;font-size:12px;line-height:1.8}.range-controls{display:flex;gap:10px;align-items:center;margin-top:14px}.range-controls input{width:100%;accent-color:var(--accent)}.range-controls output{white-space:nowrap;font-size:12px;min-width:155px;text-align:right}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.side{display:none}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding:28px}.shell{padding:0 22px}}@media(max-width:520px){.shell{padding:0 16px}.topbar{height:65px}.edition{font-size:9px;letter-spacing:1px}.hero{margin:18px 0;border-radius:18px;padding:25px 22px}h1{font-size:25px}.hero p{font-size:12px}.card{padding:20px 16px;border-radius:15px}.grid{gap:17px 12px}.field label{font-size:11px}.control input,.control select{font-size:16px;padding:0 10px}.control input.has-unit{padding-right:45px}.unit{right:10px}.kpi{padding:17px 14px}.kpi strong{font-size:23px}.chart{height:250px}.primary{padding:15px 18px}.actions .status{max-width:46%}.chart-head{align-items:flex-start;flex-direction:column;gap:8px}.tab{flex:1;padding:12px}.range-controls{align-items:stretch;flex-direction:column}.rate-row{gap:8px}h2{font-size:17px}.result-title{gap:10px}.result-title h2{font-size:17px}}
+@media(prefers-reduced-motion:no-preference){.card,.kpi{animation:appear .3s ease-out}@keyframes appear{from{opacity:.6;transform:translateY(5px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<header><div class="shell topbar"><div class="brand">LIFE<span> /</span></div><div class="edition">FAMILY FINANCIAL STUDIO · FREE</div></div></header>
+<main class="shell">
+<section class="hero"><div class="eyebrow">YOUR FAMILY, YOUR FUTURE</div><h1>家族の未来を、<br>数字で描こう。</h1><p>日々の暮らしから、教育、住まい、その先まで。<br>収入と支出をつなぎ、これからの資産の動きを見通します。</p></section>
+<nav class="tabs" aria-label="画面切替"><button type="button" class="tab active" id="inputTab">01　プランを設定</button><button type="button" class="tab" id="resultTab">02　未来を見る</button></nav>
+<section id="inputPanel"><div class="layout"><aside class="side"><strong>YOUR PLAN</strong><div id="sectionNav"></div><p class="hint" style="padding:0 14px">金額はすべて円で入力。<br>この端末に保存します。<br>実名・住所は公開されません。</p></aside><form id="planForm"><fieldset id="fields" style="border:0;padding:0;margin:0;min-width:0" disabled><div id="formSections"></div></fieldset><div class="card" style="margin-bottom:0"><div class="toolbar"><button class="secondary" type="button" id="backup">設定をバックアップ</button><button class="secondary" type="button" id="restore">バックアップを読み込む</button><input id="restoreFile" type="file" accept="application/json,.json" hidden></div><p class="hint">入力した情報は端末内だけに保存。Safariのデータを削除すると消えるため、定期的にバックアップしてください。</p></div><div class="actions"><div class="status" id="status" role="status" aria-live="polite">端末内の保存データを確認中…</div><button class="primary" id="calculate" type="submit" disabled>結果を計算<span>→</span></button></div></form></div></section>
+<section id="resultPanel" hidden><div id="empty" class="card empty">入力を確認して「結果を計算」を押すと、ここに結果が表示されます。</div><div id="results" hidden>
+<div class="result-title"><div><div class="eyebrow">YOUR LIFE PROJECTION</div><h2 style="margin-top:8px">家族の資産ダッシュボード</h2></div><button type="button" class="secondary" id="edit">条件を変更</button></div>
+<p class="sub" id="calculatedAt"></p><div class="kpis" id="kpis"></div><div id="debtAlert" class="alert" hidden></div>
+<div class="card"><div class="chart-head"><h2>純資産の推移</h2><div class="legend"><b></b>投資＋現金−資金不足借入　／　単位：万円</div></div><svg class="chart" id="assetChart" role="img" aria-label="年別の純資産推移"></svg><div class="range-controls"><label for="yearSlider" class="hint">年を選んで確認</label><input id="yearSlider" type="range" min="0" value="0"><output id="yearValue" for="yearSlider"></output></div><p class="chart-note">0円を下回る分は借入として計上。住宅ローン残債は、この純資産には含みません。</p></div>
+<div class="card"><div class="chart-head"><h2>教育費の見通し</h2><div class="legend">習い事・補助金込み　／　単位：万円</div></div><svg class="chart" id="eduChart" role="img" aria-label="年別の教育費"></svg></div>
+<div class="card"><div class="chart-head"><h2>子ども別の教育費</h2><div class="legend">通園～大学・概算／単位：万円</div></div><p class="sub">実費＝学費・習い事等 − 補助金（学費控除は0円を下限）。負担・補助は現行制度の確定額ではありません。</p><div class="table-wrap"><table><thead><tr><th>子ども</th><th>区分</th><th>総費用</th><th>補助額</th><th>実費</th></tr></thead><tbody id="eduBreakdown"></tbody></table></div></div>
+<div class="card"><div class="chart-head"><h2>年ごとのキャッシュフロー</h2><div class="toolbar"><select id="rowFilter" aria-label="表示年の絞り込み"><option value="all">すべての年</option><option value="debt">借入が残る年</option><option value="deficit">年間収支が赤字の年</option></select><button class="secondary" type="button" id="csv">CSV保存</button></div></div><p class="sub">横にスクロールして、家族の年齢・収支・残高を確認できます。金額は万円表示。</p><div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div></div>
+<div class="card"><details><summary>住宅ローンの返済予定を見る</summary><p>年返済額を月割りするv24の近似計算です。年末金利・年間返済額・年末残高を表示します。</p><div class="table-wrap"><table><thead><tr><th>年</th><th>年末金利</th><th>通常返済</th><th>繰上返済</th><th>うち利息</th><th>年末残高</th></tr></thead><tbody id="mortgageBody"></tbody></table></div><p id="mortgageTail"></p></details></div>
+<div class="card"><details><summary>このシミュレーションの計算前提</summary><p>資金不足時は投資を取り崩し、それでも足りない額を借入残高に計上します。借入利息は0％。後年の黒字は返済に充て、投資追加は手元資金の範囲内で行います。</p><p>教育費・学年は4月進級の月割りに修正しました。児童手当は2026年制度の受給月数をベースに試算し、実際の振込月は反映していません。年金は受給開始年齢と手取り年額を手入力します（未入力なら0円）。大学の減免は授業料上限だけを国公立・私立で分け、扶養や申請の判断は簡略化しています。育休給付、保育開始月、高校補助、入学金、住宅ローンなどは引き続き概算です。</p><p>現在の残高を計算開始年の期首残高として扱い、当年も1年分を計算します。年度途中の残高を使う場合、年初残高に合わせてください。純資産は金融資産と資金不足借入の差額で、不動産や住宅ローン残債は含みません。</p></details></div>
+</div></section>
+<div class="shell"><p class="note">【計算上の注意】v1.1では学年・年金自動加算・児童手当月数・大学授業料上限の一部を修正しました。ただし住宅ローン、育休、高校無償化、大学の扶養・申請・学業・対象校・入学金などは概算です。資産推移も住宅ローン残債を控除した実質純資産ではありません。意思決定の前に必ず専門家の確認を受けてください。</p></div></main><footer>LIFE /　家族の選択に、見通しを。</footer>
+<script>
+/* LIFE Financial Studio — portable, local-only calculation engine.
+ * Port of 2026-10-08 GAS v25 assumptions; NOT a validated tax/benefit forecast.
+ * This file deliberately contains no family-specific personal data or API keys.
+ */
+(function(root){
+'use strict';
+const STUDENT_NAMES=['長男','次男','三男','四男'];
+const num=v=>{const n=Number(String(v??'').replace(/,/g,''));return Number.isFinite(n)?n:0;};
+const date=s=>{
+  if(!s)return null;
+  const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return null;
+  const d=new Date(+m[1],+m[2]-1,+m[3],12);
+  return d.getFullYear()===+m[1]&&d.getMonth()===+m[2]-1&&d.getDate()===+m[3]?d:null;
+};
+const pmt=(r,n,p)=>!p?0:n<=0?0:!r?p/n:p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+function students(info){return [1,2,3,4].filter(i=>i<4||info.kid4_has==='yes').map(i=>({key:'kid'+i,name:STUDENT_NAMES[i-1],birth:date(info['kid'+i+'_birth']),order:i}));}
+function category(a){return a<0?'なし':a<3?'0-2歳':a<6?'3-5歳':a<12?'小学校':a<15?'中学校':a<18?'高校':a<22?'大学':'なし';}
+function grade(i){return i<-2?'幼保':i<=0?'幼保':i<=6?'小'+i:i<=9?'中'+(i-6):i<=12?'高'+(i-9):i<=16?'大'+(i-12):'卒';}
+// 4月2日〜翌年4月1日生まれを一つの学年にする。schoolYearは暦年ではなく4月開始年度。
+function cohortYear(birth){return birth.getFullYear()-((birth.getMonth()===3&&birth.getDate()===1)||birth.getMonth()<3?1:0);}
+function gradeAt(birth,year,month){return (month<4?year-1:year)-cohortYear(birth)-6;}
+function stageForGrade(g){return g<=-3?'0-2歳':g<=0?'3-5歳':g<=6?'小学校':g<=9?'中学校':g<=12?'高校':g<=16?'大学':'なし';}
+const monthIndex=(y,m)=>y*12+m;
+// 誕生月の翌月から、18歳到達後の最初の3月31日までを月単位で集計。
+function fiscalEndForAge(birth,age){const yr=birth.getFullYear()+age;return ((birth.getMonth()<3||(birth.getMonth()===3&&birth.getDate()===1))?yr:yr+1)*12+3;}
+function allowanceForMonth(kids,child,year,month){
+  const born=monthIndex(child.birth.getFullYear(),child.birth.getMonth()+1);
+  const now=monthIndex(year,month);
+  if(now<=born||now>fiscalEndForAge(child.birth,18))return 0;
+  // 扶養・経済的負担が継続していることを仮定。実際は確認が必要。
+  const eligible=kids.filter(k=>k.birth&&monthIndex(k.birth.getFullYear(),k.birth.getMonth()+1)<=now&&now<=fiscalEndForAge(k.birth,22));
+  const elder=eligible.filter(k=>k.birth.getTime()<child.birth.getTime()||(k.birth.getTime()===child.birth.getTime()&&k.order<child.order)).length;
+  if(elder>=2)return 30000;
+  const third=monthIndex(child.birth.getFullYear()+3,child.birth.getMonth()+1);
+  return now<=third?15000:10000;
+}
+function yearlyAllowance(info,kids,year){
+  if(info.child_allowance_mode!=='yes')return 0;
+  let total=0;for(let month=1;month<=12;month++)for(const child of kids)if(child.birth)total+=allowanceForMonth(kids,child,year,month);
+  return total;
+}
+function yearlyPension(info,person,birth,year){
+  const annual=num(info[person+'_pension_amount']);if(!annual)return 0;
+  const startingAge=info[person+'_pension_age']===''||info[person+'_pension_age']===undefined?65:num(info[person+'_pension_age']);
+  // 老齢年金は誕生日前日の65歳到達月の翌月から権利が発生する概算（繰上げ・繰下げは額を入力）。
+  let eligibilityYear=birth.getFullYear()+startingAge,eligibilityMonth=birth.getMonth()+1;
+  if(birth.getDate()===1){eligibilityMonth--;if(eligibilityMonth===0){eligibilityMonth=12;eligibilityYear--;}}
+  let amount=0;for(let month=1;month<=12;month++)if(monthIndex(year,month)>monthIndex(eligibilityYear,eligibilityMonth))amount+=annual/12;
+  return amount;
+}
+function validate(info){
+  for(const k of ['husband_birth','wife_birth'])if(!date(info[k]))throw Error(k+'：日付が未入力または不正です');
+  if(info.kid4_has==='yes'&&!date(info.kid4_birth))throw Error('4人目の生年月日が未入力です');
+  for(const k of ['kid1_birth','kid2_birth','kid3_birth'])if(info[k]&&!date(info[k]))throw Error(k+'：日付が不正です');
+  for(const p of ['husband','wife']){
+    const pensionAge=info[p+'_pension_age'];
+    if(pensionAge!==undefined&&pensionAge!==''&&(!Number.isInteger(Number(pensionAge))||num(pensionAge)<60||num(pensionAge)>75))throw Error(p+'の年金受給開始年齢は60〜75歳で指定してください');
+    if(num(info[p+'_pension_amount'])<0)throw Error(p+'の年金年額は0円以上にしてください');
+    const g=num(info[p+'_income_growth']);
+    if(g<=-100||g>100||Math.abs(g*10-Math.round(g*10))>1e-7)throw Error(p+'の収入増減率を確認してください');
+  }
+  for(const [k,v] of Object.entries(info)){
+    if(k.includes('_birth')||typeof v!=='string'||v==='')continue;
+    if(/(?:_month_net|_bonus_net|_cost|_amount|_balance|_return|_growth|_freq|_years|_price|_age|_investment|_savings)$/.test(k)&&!Number.isFinite(Number(v.replace(/,/g,''))))throw Error(k+'は数字で入力してください');
+  }
+  if(num(info.investment_return)<-100||num(info.living_cost_growth)<-100)throw Error('増減率は-100%以上にしてください');
+  if(num(info.loan_principal)>0&&!date(info.loan_start_date))throw Error('住宅ローン開始日を入力してください');
+  if(num(info.loan_principal)>0&&(info.loan_rate_initial===undefined||String(info.loan_rate_initial)===''||!Number.isFinite(Number(info.loan_rate_initial))||num(info.loan_rate_initial)<0))throw Error('住宅ローンの初期金利を0%以上で入力してください');
+  if(num(info.loan_prepay_annual_amount)>0&&(!num(info.loan_prepay_annual_start)||!num(info.loan_prepay_annual_end)))throw Error('定期繰上返済の開始年・終了年を入力してください');
+  if(num(info.loan_prepay_once_amount)>0&&!date(info.loan_prepay_once_date))throw Error('一回繰上返済の実行日を入力してください');
+  if(num(info.loan_principal)>0&&(num(info.loan_years)<1||num(info.loan_years)>60))throw Error('住宅ローン期間は1〜60年で指定してください');
+  if(num(info.loan_principal)>0&&num(info.loan_main_principal)>num(info.loan_principal))throw Error('毎月返済分の元本が借入総額を超えています');
+  if(info.loan_prepay_once_date&&!date(info.loan_prepay_once_date))throw Error('一回繰上返済日が不正です');
+  if(info.has_future_rate==='yes'){
+    const seen=new Set();
+    for(let i=1;i<=10;i++){
+      const [y,m,r]=['y','m','v'].map(k=>String(info['fr_'+k+'_'+i]??''));
+      if([y,m,r].some(Boolean)&&![y,m,r].every(Boolean))throw Error('金利変更 '+i+' 行は年月と金利を揃えてください');
+      if(!y)continue;
+      if(!Number.isInteger(+y)||+y<2000||!Number.isInteger(+m)||+m<1||+m>12||!Number.isFinite(+r)||+r<0)throw Error('金利変更 '+i+' 行が不正です');
+      const k=y+'-'+m;if(seen.has(k))throw Error('金利変更年月が重複しています');seen.add(k);
+    }
+  }
+}
+function education(info,startYear,duration){
+  // 学年・費用区分は毎月4月に更新。暦年の金額は1〜12月の在籍費用を集計する。
+  const result=[],kids=students(info),cost={jhs:{public:500000,private:1200000},hs:{public:600000,private:1000000},univ:{nat_lit:1200000,nat_sci:1400000,pri_lit:1600000,pri_sci:1800000}};
+  const lessons={'3-5歳':{low:0,normal:120000,high:360000},'小学校':{low:60000,normal:240000,high:480000},'中学校':{low:120000,normal:360000,high:840000},'高校':{low:120000,normal:480000,high:1000000}};
+  for(let j=0;j<duration;j++){
+    const year=startYear+j;
+    for(const child of kids){
+      if(!child.birth)continue;
+      const byStage=new Map();
+      for(let month=1;month<=12;month++){
+        // 出生前には通園料などを発生させない。
+        if(monthIndex(year,month)<monthIndex(child.birth.getFullYear(),child.birth.getMonth()+1))continue;
+        const g=gradeAt(child.birth,year,month),cat=stageForGrade(g);
+        if(cat==='なし')continue;
+        const row=byStage.get(cat)||{year,child:child.name,order:child.order,age:year-child.birth.getFullYear(),stage:cat,key:child.key,tuition:0,lessons:0,subsidy:0,net:0,months:0};
+        const k=child.key,univType=info[k+'_univ_type']||'nat_lit';let monthTuition=0,monthSubsidy=0;
+        if(cat==='0-2歳')monthTuition=child.order===1?num(info.hoikuen_max_month):child.order===2?num(info.hoikuen_max_month)/2:0;
+        if(cat==='3-5歳')monthTuition=info.age3to5_type==='yochien'?240000/12:0;
+        if(cat==='小学校')monthTuition=300000/12;
+        if(cat==='中学校')monthTuition=(cost.jhs[info[k+'_jhs_type']]??cost.jhs.public)/12;
+        if(cat==='高校'){
+          monthTuition=(cost.hs[info[k+'_hs_type']]??cost.hs.public)/12;
+          if(info.hs_free_use==='yes')monthSubsidy=Math.min(monthTuition,457000/12); // 高校補助は旧概算のまま
+        }
+        if(cat==='大学'){
+          const annualTuition=cost.univ[univType]??cost.univ.nat_lit;
+          monthTuition=annualTuition/12+(info[k+'_univ_living']==='alone'?1200000/12:0);
+          const dependentCount=kids.filter(other=>other.birth&&monthIndex(other.birth.getFullYear(),other.birth.getMonth()+1)<=monthIndex(year,month)&&monthIndex(year,month)<=fiscalEndForAge(other.birth,22)).length;
+          // 公的制度は税情報・申請・学業要件等で判定される。ここでは人数のみの概算。
+          if(info.univ_free_use==='yes'&&year>=2025&&dependentCount>=3){
+            const cap=univType.startsWith('pri_')?700000:540000;
+            monthSubsidy=Math.min(annualTuition,cap)/12; // 家賃等を減免対象とみなさない
+          }
+        }
+        const lesson=(lessons[cat]?.[info.extra_activity_level||'normal']??0)/12;
+        row.tuition+=monthTuition;row.subsidy+=monthSubsidy;row.lessons+=lesson;row.months++;
+        byStage.set(cat,row);
+      }
+      for(const row of byStage.values()){
+        row.tuition=Math.round(row.tuition);row.subsidy=Math.round(row.subsidy);row.lessons=Math.round(row.lessons);
+        row.net=Math.max(0,row.tuition-row.subsidy)+row.lessons;
+        result.push(row);
+      }
+    }
+  }
+  return result;
+}
+function annualMortgagePayment(rate,pM,pB,term){if(term<=0)return 0;const r=num(rate)/100;return Math.round(pmt(r/12,term*12,pM)*12+pmt(r/2,term*2,pB)*2);}
+function mortgageSchedule(info){
+  const birth=date(info.husband_birth),start=date(info.loan_start_date),principal=num(info.loan_principal),term=num(info.loan_years);
+  if(!principal||!start||!term)return [];
+  const rawMain=info.loan_main_principal,main=rawMain===''||rawMain===undefined?principal:num(rawMain),bonus=Math.max(0,principal-main);
+  let balance=principal,rate=num(info.loan_rate_initial),monthly=annualMortgagePayment(rate,main,bonus,term)/12,y=start.getFullYear(),m=start.getMonth()+1;
+  const custom=[];
+  if(info.has_future_rate==='yes')for(let i=1;i<=10;i++){
+    const yy=num(info['fr_y_'+i]),mm=num(info['fr_m_'+i]),raw=info['fr_v_'+i],v=Number(raw);
+    if(yy>0&&mm>=1&&mm<=12&&raw!==''&&raw!==undefined&&v>=0)custom.push({year:yy,month:mm,rate:v});
+  }
+  const schedule=[],periods=Math.round(term*12);let d={year:y,startBalance:balance,standardPay:0,prepay:0,interest:0,endBalance:balance,rate};
+  for(let i=1;i<=periods&&balance>0;i++){
+    const cr=custom.find(r=>r.year===y&&r.month===m);if(cr)rate=cr.rate;
+    if(i>1&&(i-1)%60===0){const ratio=main/principal,remaining=(periods+1-i)/12,next=annualMortgagePayment(rate,balance*ratio,balance*(1-ratio),remaining)/12;monthly=Math.min(next,monthly*1.25);}
+    const interest=balance*rate/1200,pay=Math.min(monthly,balance+interest);
+    balance-=pay-interest;d.standardPay+=pay;d.interest+=interest;d.rate=rate;
+    const yearly=num(info.loan_prepay_annual_amount)>0&&y>=num(info.loan_prepay_annual_start)&&y<=num(info.loan_prepay_annual_end)&&m===(num(info.loan_prepay_annual_month)||3)?num(info.loan_prepay_annual_amount):0;
+    const once=date(info.loan_prepay_once_date),single=once&&once.getFullYear()===y&&once.getMonth()+1===m?num(info.loan_prepay_once_amount):0;
+    const paid=Math.min(yearly+single,Math.max(0,balance));balance-=paid;d.prepay+=paid;
+    if(m===12||balance<=0||i===periods){d.endBalance=Math.max(0,balance);d.totalPay=d.standardPay+d.prepay;d.hAge=birth?y-birth.getFullYear():'-';schedule.push({...d});d={year:y+1,startBalance:balance,standardPay:0,prepay:0,interest:0,endBalance:balance,rate};}
+    if(++m>12){m=1;y++;}
+  }
+  return schedule;
+}
+function settleAssets(cash,invest,surplus,planned,rate){
+  invest=Math.max(0,invest*(1+rate/100));cash+=surplus;
+  if(cash<0){const sell=Math.min(invest,-cash);invest-=sell;cash+=sell;}
+  const contribution=Math.min(Math.max(0,planned),Math.max(0,cash));
+  cash-=contribution;invest+=contribution;
+  return {cash,invest,debt:Math.max(0,-cash),total:cash+invest,contribution};
+}
+function calculate(info,{startYear=new Date().getFullYear()}={}){
+  validate(info);const hBirth=date(info.husband_birth),wBirth=date(info.wife_birth);
+  const duration=Math.max(startYear+30,hBirth?hBirth.getFullYear()+90:startYear+60)-startYear+1;
+  const kids=students(info),edu=education(info,startYear,duration),byYear=new Map(),mortgage=mortgageSchedule(info),mortByYear=new Map(mortgage.map(m=>[m.year,m]));
+  for(const r of edu)byYear.set(r.year,(byYear.get(r.year)||0)+r.net);
+  const birthYears=new Set(kids.filter(k=>k.birth).map(k=>k.birth.getFullYear()));
+  const k1=kids[0]?.birth,k1Univ=k1?k1.getFullYear()+18:9999;
+  let lastGrad=0;for(const kid of kids)if(kid.birth)lastGrad=Math.max(lastGrad,kid.birth.getFullYear()+22);if(!lastGrad)lastGrad=9999;
+  const retirement=p=>info[p+'_retire_has']==='yes'&&date(info[p+'_birth'])?date(info[p+'_birth']).getFullYear()+num(info[p+'_retire_age']):9999;
+  const hRet=retirement('husband'),wRet=retirement('wife'),cashflow=[];
+  let cash=num(info.current_savings),invest=num(info.current_invest_balance);
+  for(let i=0;i<duration;i++){
+    const year=startYear+i,ha=year-hBirth.getFullYear(),wa=year-wBirth.getFullYear();
+    const salary=(p,age,ret)=>{
+      if(year>ret||(p==='wife'&&birthYears.has(year)))return 0;
+      const base=num(info[p+'_month_net'])*12+num(info[p+'_bonus_net']),g=num(info[p+'_income_growth'])/100,peak=num(info[p+'_peak_age'])||60;
+      if(age<=peak)return base*Math.pow(1+g,i);
+      return base*Math.pow(1+g,Math.max(0,peak-(age-i)))*Math.pow(1-g,age-peak);
+    };
+    let income=salary('husband',ha,hRet)+salary('wife',wa,wRet);
+    income+=yearlyPension(info,'husband',hBirth,year)+yearlyPension(info,'wife',wBirth,year);
+    if(year===hRet)income+=num(info.husband_retire_amount);
+    if(year===wRet)income+=num(info.wife_retire_amount);
+    if(year===num(info.extra_income_year))income+=num(info.extra_income_amount);
+    income+=yearlyAllowance(info,kids,year);
+    income=Math.round(income);
+    const base=num(info.living_cost_annual);let living=base;
+    if(year<lastGrad){const years=year>=k1Univ?Math.max(0,k1Univ-startYear):i;living=base*Math.pow(1+num(info.living_cost_growth)/100,years);
+      kids.forEach(k=>{if(k.birth){const age=year-k.birth.getFullYear();if(age>=18&&age<=21)living-=num(info[info[k.key+'_univ_living']==='alone'?'living_reduce_alone':'living_reduce_home'])*12;}});
+    }
+    living=Math.round(Math.max(0,living));
+    let maint=info.large_maintenance_has==='yes'&&year===num(info.large_maintenance_year)?num(info.large_maintenance_cost):0;
+    const app=num(info.appliance_replace_years),freq=num(info.car_replace_freq);
+    if(app>0&&i!==0&&i%app===0)maint+=num(info.appliance_replace_cost);
+    const car=ha<75&&info.car_has==='yes'&&freq>0&&i!==0&&i%freq===0?Math.round(num(info.car_price)):0;
+    const travel=ha<75?Math.round(num(info.travel_cost)):0;
+    const house=Math.round((mortByYear.get(year)?.totalPay||0)+maint),educationCost=Math.round(byYear.get(year)||0),expenses=educationCost+living+house+car+travel;
+    const assets=settleAssets(cash,invest,income-expenses,year>=wRet?0:num(info.annual_investment),num(info.investment_return));cash=assets.cash;invest=assets.invest;
+    const labels=[1,2,3,4].map(order=>{
+      const k=kids.find(k=>k.order===order);if(!k?.birth)return '-';const a=year-k.birth.getFullYear();if(a<0)return '出生前';
+      return a+'歳('+grade(gradeAt(k.birth,year,4))+')';
+    });
+    cashflow.push([year,ha,wa,...labels,income,educationCost,living,house,car,travel,expenses,Math.round(invest),Math.round(cash),Math.round(assets.total),Math.round(assets.debt),income-expenses,Math.round(assets.contribution)]);
+  }
+  const breakdown=[];
+  for(const child of kids){
+    if(!child.birth)continue;
+    for(const stage of ['0-2歳','3-5歳','小学校','中学校','高校','大学']){
+      const rows=edu.filter(r=>r.order===child.order&&r.stage===stage);
+      if(!rows.length)continue;
+      breakdown.push({child:child.name,stage,gross:rows.reduce((a,r)=>a+r.tuition+r.lessons,0),subsidy:rows.reduce((a,r)=>a+r.subsidy,0),net:rows.reduce((a,r)=>a+r.net,0)});
+    }
+  }
+  return {status:'OK',cashflow,mortgageSchedule:mortgage,eduSummary:[...byYear].sort((a,b)=>a[0]-b[0]),educationBreakdown:breakdown,kid4_has:info.kid4_has==='yes',startYear,assumptionVersion:'v1.1-policy-corrections-remaining-approximations'};
+}
+const api={calculate,validate,education,mortgageSchedule,settleAssets,category,gradeAt,yearlyAllowance,yearlyPension,version:'1.1.0-policy-corrections'};
+if(typeof module!=='undefined'&&module.exports)module.exports=api;
+root.LifeEngine=api;
+})(typeof window!=='undefined'?window:globalThis);
+
+
+
+'use strict';
+const $=id=>document.getElementById(id), yes=[['no','利用しない'],['yes','利用する']], has=[['no','なし'],['yes','あり']], pub=[['public','公立'],['private','私立']];
+const specs=[];
+function field(key,label,type='number',options={}){const f={key,label,type,...options};specs.push(f);const el=document.createElement('div');el.className='field'+(options.full?' full':'');const lab=document.createElement('label');lab.htmlFor=key;lab.textContent=label;el.append(lab);const control=document.createElement('div');control.className='control';const input=document.createElement(type==='select'?'select':'input');input.id=key;input.name=key;
+  if(type==='select'){options.choices.forEach(([v,t])=>input.add(new Option(t,v)));}else{input.type=type;if(type==='number'){input.step=options.step||'1';if(!options.signed)input.min=options.min??'0';if(options.min!==undefined)input.min=options.min;if(options.max!==undefined)input.max=options.max;input.inputMode='decimal';input.placeholder=options.placeholder||'0';}if(type==='date'){input.min='1900-01-01';input.max='2150-12-31';}}
+  if(options.required)input.required=true;if(options.value!==undefined)input.value=options.value;
+  if(options.unit){input.className='has-unit';const unit=document.createElement('span');unit.className='unit';unit.textContent=options.unit;control.append(unit);}control.prepend(input);el.append(control);
+  if(options.hint){const h=document.createElement('div');h.className='hint';h.textContent=options.hint;el.append(h);}return el;
+}
+function section(id,n,title){const s=document.createElement('section');s.className='card';s.id=id;const head=document.createElement('div');head.className='section-head';const num=document.createElement('span');num.className='num';num.textContent=n;const h=document.createElement('h2');h.textContent=title;head.append(num,h);s.append(head);$('formSections').append(s);const a=document.createElement('a');a.href='#'+id;a.textContent=n+'　'+title;$('sectionNav').append(a);return s;}
+function grid(parent){const g=document.createElement('div');g.className='grid';parent.append(g);return g;}
+function heading(parent,text){const h=document.createElement('h3');h.textContent=text;parent.append(h);}
+function note(parent,text){const p=document.createElement('p');p.className='note';p.textContent=text;parent.append(p);}
+function money(k,l,o={}){return field(k,l,'number',{unit:'円',...o});}
+function select(k,l,choices,o={}){return field(k,l,'select',{choices,...o});}
+function createForm(){
+  let s=section('family','01','家族のこと'),g=grid(s);g.append(field('husband_birth','夫の生年月日','date',{required:true}),field('wife_birth','妻の生年月日','date',{required:true}));['長男','次男','三男'].forEach((t,i)=>g.append(field('kid'+(i+1)+'_birth',t+'の生年月日','date')));g.append(select('kid4_has','4人目の予定',has));const k4=grid(s);k4.id='kid4BirthGroup';k4.style.marginTop='18px';k4.append(field('kid4_birth','四男の生年月日・予定日','date'));
+  s=section('income','02','収入と働き方');['husband','wife'].forEach((p,i)=>{heading(s,i?'妻の収入':'夫の収入');g=grid(s);g.append(money(p+'_month_net','毎月の手取り'),money(p+'_bonus_net','年間の手取り賞与'),field(p+'_income_growth','給与の年間上昇率','number',{unit:'％',step:'0.1',min:'-99.9',max:'100',placeholder:'例：1.5',hint:'小数第1位まで入力できます'}),field(p+'_peak_age','収入がピークになる年齢','number',{unit:'歳',value:60,min:1,max:100}),select(p+'_retire_has','退職金',has),field(p+'_retire_age','退職金受取・給与終了年齢','number',{unit:'歳',value:65,min:1,max:100}),money(p+'_retire_amount','退職金額'),field(p+'_pension_age','年金の受給開始年齢','number',{unit:'歳',value:65,min:60,max:75}),money(p+'_pension_amount','年金の年間手取り額',{hint:'未入力なら0円。受給見込額を自分で入力（夫・妻それぞれ）'}));});heading(s,'その他の収入');g=grid(s);g.append(field('extra_income_year','臨時収入を受け取る年','number',{unit:'年'}),money('extra_income_amount','臨時収入額'),select('child_allowance_mode','児童手当を収入に含める',yes));note(s,'年金は入力した開始年齢・年額から月割りします。未入力なら加算しません。年金の概算は支給要件・繰上げ・税金等を自動計算しません。妻は出産年の給与を0円とする旧概算を引き継ぐため、育休給付は今後の検討対象です。');
+  s=section('education','03','教育と進路');g=grid(s);g.append(select('age3to5_type','3〜5歳の通園先',[['hoikuen','保育園'],['yochien','幼稚園']]),money('hoikuen_max_month','保育園の月額上限'),select('extra_activity_level','習い事・塾の水準',[['low','少なめ'],['normal','標準'],['high','多め']],{value:'normal'}),select('hs_free_use','高校の補助を適用',yes),select('univ_free_use','多子世帯の大学補助を適用',yes));
+  ['長男','次男','三男','四男'].forEach((t,i)=>{const wrap=document.createElement('div');wrap.id='kid'+(i+1)+'Education';s.append(wrap);heading(wrap,t+'の進路');const gg=grid(wrap),p='kid'+(i+1);gg.append(select(p+'_jhs_type','中学校',pub),select(p+'_hs_type','高校',pub),select(p+'_univ_type','大学',[['nat_lit','国公立・文系'],['nat_sci','国公立・理系'],['pri_lit','私立・文系'],['pri_sci','私立・理系']]),select(p+'_univ_living','大学での暮らし',[['home','実家から通学'],['alone','一人暮らし']]))});note(s,'2026年基準の学年（4月2日〜翌4月1日生まれが同学年）を月割りで集計。大学は授業料減免上限を国公立54万円・私立70万円/年とし、人数で簡易判定します。実際の扶養・申請・対象校・学業要件・入学金などは未反映。高校補助額も旧概算です。');
+  s=section('assets','04','貯蓄と投資');g=grid(s);g.append(money('current_savings','現金・預貯金の残高',{signed:true,hint:'資金不足借入がある場合は負数。計算開始年の期首残高。'}),money('current_invest_balance','投資の残高'),money('annual_investment','年間の投資追加予定額'),field('investment_return','投資の年間利回り','number',{unit:'％',step:'0.1',signed:true,min:-100}));note(s,'資金が不足したら投資を取り崩し、不足分を借入としてマイナス表示。借入利息は0％です。投資追加は手元資金を上限とし、妻の退職年から停止します。');
+  s=section('living','05','暮らしと楽しみ');g=grid(s);g.append(money('living_cost_annual','年間の生活費'),field('living_cost_growth','生活費の年間増加率','number',{unit:'％',step:'0.1',signed:true,min:-100}),money('living_reduce_home','大学・実家通学時の生活費減額',{unit:'円/月',hint:'子ども1人あたり・月額'}),money('living_reduce_alone','大学・一人暮らし時の生活費減額',{unit:'円/月',hint:'子ども1人あたり・月額'}),money('travel_cost','年間の旅行費'),select('car_has','車の買い替え',has),field('car_replace_freq','車の買い替え間隔','number',{unit:'年'}),money('car_price','車の購入費'));note(s,'夫が75歳になる年から、車の購入費と旅行費は0円になります。買い替えは計算開始年から指定年数ごとです。');
+  s=section('housing','06','住まいとローン');note(s,'借入額・返済条件はこの画面で設定します。公開ソースにご家庭の借入額や返済予定を埋め込まないため、初回はご自身で入力してください。ボーナス分は年額を12分割して計算する近似です。');
+g=grid(s);g.append(
+  money('loan_principal','住宅ローン借入元本',{hint:'借入額が0円または未入力なら住宅ローン計算は行いません'}),
+  field('loan_start_date','借入開始日','date'),
+  field('loan_years','返済期間','number',{unit:'年',value:35,min:1,max:60}),
+  money('loan_main_principal','元本のうち毎月返済部分',{hint:'空欄なら全額を毎月返済。ボーナス部分＝借入元本－この金額'}),
+  field('loan_rate_initial','借入時の年利','number',{unit:'％',step:'0.001',min:0}),
+  field('loan_prepay_annual_start','定期繰上返済の開始年','number',{unit:'年'}),
+  field('loan_prepay_annual_end','定期繰上返済の終了年','number',{unit:'年'}),
+  field('loan_prepay_annual_month','定期繰上返済の月','number',{unit:'月',min:1,max:12,value:3}),
+  money('loan_prepay_annual_amount','定期繰上返済額（1年あたり）'),
+  field('loan_prepay_once_date','一回限りの繰上返済日','date'),
+  money('loan_prepay_once_amount','一回限りの繰上返済額')
+);heading(s,'住まいのその他の費用');g=grid(s);g.append(select('large_maintenance_has','大規模修繕',has),field('large_maintenance_year','大規模修繕をする年','number',{unit:'年'}),money('large_maintenance_cost','大規模修繕費'),field('appliance_replace_years','家具・家電の買い替え間隔','number',{unit:'年'}),money('appliance_replace_cost','家具・家電の買い替え費'),select('has_future_rate','将来の金利変更を設定',has));const rates=document.createElement('div');rates.id='rateGroup';s.append(rates);heading(rates,'金利変更のシナリオ');note(rates,'借入開始後の任意年月を指定してください。空欄の行は使いません。同じ年月は重複不可。金利は0％も指定できます。');for(let i=1;i<=10;i++){const row=document.createElement('div');row.className='rate-row';rates.append(row);row.append(field('fr_y_'+i,i+'：変更年','number',{unit:'年',min:2000,max:2150}),field('fr_m_'+i,'月','number',{unit:'月',min:1,max:12}),field('fr_v_'+i,'年利','number',{unit:'％',step:'0.001'}));}
+}
+function syncConditional(){const has4=$('kid4_has').value==='yes';$('kid4BirthGroup').hidden=!has4;$('kid4Education').hidden=!has4;$('kid4_birth').disabled=!has4;$('kid4_birth').required=has4;$('kid4Education').querySelectorAll('input,select').forEach(e=>e.disabled=!has4);const rates=$('has_future_rate').value==='yes';$('rateGroup').hidden=!rates;$('rateGroup').querySelectorAll('input').forEach(e=>e.disabled=!rates);}
+function switchTab(result){$('inputPanel').hidden=result;$('resultPanel').hidden=!result;$('inputTab').classList.toggle('active',!result);$('resultTab').classList.toggle('active',result);$('inputTab').setAttribute('aria-current',result?'false':'page');$('resultTab').setAttribute('aria-current',result?'page':'false');}
+function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);}
+function load(){
+  try {
+    const stored=JSON.parse(localStorage.getItem('lifeplan.settings.v1')||'{}');
+    Object.entries(stored).forEach(([k,v])=>{if($(k)&&v!==null&&v!==undefined)$(k).value=String(v);});
+    $('fields').disabled=false;$('calculate').disabled=false;syncConditional();
+    status(Object.keys(stored).length?'前回の入力内容を端末から読み込みました。':'入力内容は自動保存されます。');
+  }catch(e){$('fields').disabled=false;$('calculate').disabled=false;syncConditional();status('保存内容の読み込みに失敗しました。入力は続けられます。',true);}
+}
+function payloadFromForm(){const payload={};specs.forEach(f=>{const el=$(f.key);if(el&&!el.disabled)payload[f.key]=el.value;});return payload;}
+function saveLocal(){try{localStorage.setItem('lifeplan.settings.v1',JSON.stringify(payloadFromForm()));return true;}catch(e){status('端末の保存領域に書き込めません。バックアップを利用してください。',true);return false;}}
+function downloadJson(){const data=JSON.stringify(payloadFromForm(),null,2),a=document.createElement('a');const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.href=url;a.download='lifeplan-settings.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);}
+async function importJson(file){if(!file)return;try{if(file.size>250000)throw Error('ファイルが大きすぎます');const parsed=JSON.parse(await file.text());if(!parsed||Array.isArray(parsed)||typeof parsed!=='object')throw Error('JSON形式が不正です');for(const [k,v] of Object.entries(parsed)){if($(k)&&typeof v!=='object'&&v!==null)$(k).value=String(v);}syncConditional();saveLocal();status('バックアップを読み込みました。入力内容を確認してください。');}catch(e){status('読み込み失敗：'+e.message,true);}}
+
+function validateScenario(){
+  ['husband','wife'].forEach(p=>{const v=$(p+'_income_growth');v.setCustomValidity(v.value&&Math.abs(Number(v.value)*10-Math.round(Number(v.value)*10))>1e-7?'小数第1位まで入力してください。':'');});
+  for(let i=1;i<=10;i++)['y','m','v'].forEach(k=>$('fr_'+k+'_'+i).setCustomValidity(''));
+  if($('has_future_rate').value==='yes'){const seen=new Set();for(let i=1;i<=10;i++){const fields=['y','m','v'].map(k=>$('fr_'+k+'_'+i)),values=fields.map(e=>e.value);if(values.some(v=>v!=='')&&values.some(v=>v===''))fields.find(e=>e.value==='').setCustomValidity('年・月・金利をすべて入力してください。');if(values.every(v=>v!=='')){const key=values[0]+'-'+values[1];if(seen.has(key))fields[0].setCustomValidity('同じ年月の金利変更が重複しています。');seen.add(key);}}}
+  return $('planForm').reportValidity();
+}
+let lastResult=null;
+function submit(e){
+  e.preventDefault();if(!validateScenario())return;
+  const payload=payloadFromForm();saveLocal();$('calculate').disabled=true;$('fields').disabled=true;
+  status('この端末内で計算しています…');
+  try{
+    const result=LifeEngine.calculate(payload);
+    lastResult=result;renderResults(result);switchTab(true);
+    status('計算結果を表示しました。入力内容は端末内に保存しました。');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){status('計算に失敗しました：'+e.message,true);}
+  finally{$('fields').disabled=false;$('calculate').disabled=false;syncConditional();}
+}
+
+const format=n=>new Intl.NumberFormat('ja-JP',{maximumFractionDigits:1}).format(n/10000),moneyText=n=>format(n)+'万円';
+function metric(label,value,detail,featured=false,negative=false){const d=document.createElement('div');d.className='kpi'+(featured?' featured':'');const l=document.createElement('label');l.textContent=label;const v=document.createElement('strong');v.textContent=value;if(negative)v.className='negative';const s=document.createElement('small');s.textContent=detail;d.append(l,v,s);return d;}
+function renderResults(data){
+  const target=$('eduBreakdown');target.replaceChildren();
+  for(const item of (data.educationBreakdown||[])){
+    const tr=document.createElement('tr');[item.child,item.stage,moneyText(item.gross),moneyText(item.subsidy),moneyText(item.net)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});target.append(tr);
+  }
+  const rows=data.cashflow;if(!rows.length)return;$('empty').hidden=true;$('results').hidden=false;const min=rows.reduce((a,b)=>a[16]<b[16]?a:b),last=rows[rows.length-1],firstDebt=rows.find(r=>r[17]>0),maxDebt=Math.max(...rows.map(r=>r[17]));$('kpis').replaceChildren(metric('最終年の純資産',moneyText(last[16]),last[0]+'年・夫'+last[1]+'歳',true,last[16]<0),metric('純資産が最も少ない年',moneyText(min[16]),min[0]+'年・夫'+min[1]+'歳',false,min[16]<0),metric('初めて借入が残る年',firstDebt?firstDebt[0]+'年':'借入なし',firstDebt?'夫'+firstDebt[1]+'歳時点':'試算期間を通して',false,!!firstDebt),metric('最大の借入残高',moneyText(maxDebt),'資金不足による借入のみ',false,maxDebt>0));$('debtAlert').hidden=!firstDebt;if(firstDebt)$('debtAlert').textContent=firstDebt[0]+'年の年末に資金不足借入が残ります。以降も計算を継続し、黒字の年は返済に充てます。';$('calculatedAt').textContent=rows[0][0]+'〜'+last[0]+'年 ／ 年末残高ベース ／ 更新 '+new Date().toLocaleString('ja-JP');$('yearSlider').max=rows.length-1;$('yearSlider').value=0;renderCharts();renderTable();const body=$('mortgageBody');body.replaceChildren();data.mortgageSchedule.forEach(r=>{const tr=document.createElement('tr');[r.year,r.rate.toFixed(3)+'％',moneyText(r.standardPay),moneyText(r.prepay),moneyText(r.interest),moneyText(r.endBalance)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});body.append(tr);});const tail=data.mortgageSchedule.at(-1);$('mortgageTail').textContent=tail&&tail.endBalance>1?'計算期間末に残債 '+moneyText(tail.endBalance)+' があります。この残債の精算はキャッシュフローに含まれていません。':(tail?'表示の返済予定で完済する試算です。':'住宅ローン条件が未入力です。');}
+function svgNode(tag,attrs={},text){const n=document.createElementNS('http://www.w3.org/2000/svg',tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!==undefined)n.textContent=text;return n;}
+function chart(id,rows,index,color,bar=false){const svg=$(id),W=Math.max(310,svg.clientWidth||700),H=svg.clientHeight||300,L=55,R=14,T=18,B=32,vals=rows.map(r=>r[index]/10000);svg.replaceChildren();svg.setAttribute('viewBox',`0 0 ${W} ${H}`);const low=Math.min(0,...vals),high=Math.max(1,...vals),span=high-low,lo=low<0?low-span*.09:0,hi=high+span*.09;const x=i=>L+i*(W-L-R)/Math.max(1,rows.length-1),y=v=>H-B-(v-lo)/(hi-lo)*(H-T-B);
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,yy=y(v);svg.append(svgNode('line',{x1:L,x2:W-R,y1:yy,y2:yy,stroke:'#e5ecee'}),svgNode('text',{x:L-8,y:yy+4,'text-anchor':'end'},Math.round(v).toLocaleString('ja-JP')));}
+  svg.append(svgNode('line',{x1:L,x2:W-R,y1:y(0),y2:y(0),stroke:low<0?'#bb3653':'#b4c7cb','stroke-dasharray':'4 4'}));const ticks=new Set([0,Math.round((rows.length-1)/2),rows.length-1]);ticks.forEach(i=>svg.append(svgNode('text',{x:x(i),y:H-7,'text-anchor':i===0?'start':i===rows.length-1?'end':'middle'},rows[i][0]+'年')));
+  if(bar){const bw=Math.max(2,(W-L-R)/rows.length*.65);vals.forEach((v,i)=>{const rect=svgNode('rect',{x:Math.min(W-R-bw,x(i)-bw/2),y:y(v),width:bw,height:Math.max(0,y(0)-y(v)),rx:2,fill:color});rect.append(svgNode('title',{},rows[i][0]+'年 '+moneyText(rows[i][index])));svg.append(rect);});return;}
+  const defs=svgNode('defs'),gradient=svgNode('linearGradient',{id:'lineColor',x1:'0',y1:'0',x2:'0',y2:'1'}),offset=Math.max(0,Math.min(100,(y(0)-T)/(H-T-B)*100));gradient.setAttribute('gradientUnits','userSpaceOnUse');gradient.setAttribute('y1',T);gradient.setAttribute('y2',H-B);gradient.append(svgNode('stop',{offset:offset+'%','stop-color':color}),svgNode('stop',{offset:offset+'%','stop-color':'#b93151'}));defs.append(gradient);svg.append(defs);const path=vals.map((v,i)=>(i?'L':'M')+x(i)+','+y(v)).join(' ');svg.append(svgNode('path',{d:path+' L'+x(rows.length-1)+','+y(0)+' L'+x(0)+','+y(0)+' Z',fill:color,opacity:'.07'}),svgNode('path',{d:path,fill:'none',stroke:'url(#lineColor)','stroke-width':2.8,'stroke-linejoin':'round'}));const chosen=Number($('yearSlider').value),v=vals[chosen];svg.append(svgNode('line',{x1:x(chosen),x2:x(chosen),y1:T,y2:H-B,stroke:'#b0c5c8','stroke-dasharray':'3 4'}),svgNode('circle',{cx:x(chosen),cy:y(v),r:5,fill:v<0?'#b93151':color,stroke:'#fff','stroke-width':2}));$('yearValue').textContent=rows[chosen][0]+'年　'+moneyText(rows[chosen][index]);$('yearValue').classList.toggle('negative',v<0);
+}
+function renderCharts(){if(!lastResult||$('resultPanel').hidden)return;chart('assetChart',lastResult.cashflow,16,'#087f71');if(lastResult.eduSummary.length)chart('eduChart',lastResult.eduSummary,1,'#8582db',true);else $('eduChart').replaceChildren(svgNode('text',{x:20,y:50},'教育費の対象となる子どもの設定がありません。'));}
+const columns=[['年',0],['夫',1],['妻',2],['長男',3],['次男',4],['三男',5],['四男',6],['収入',7],['教育',8],['生活',9],['住宅',10],['車',11],['旅行',12],['支出計',13],['年間収支',18],['投資残高',14],['現金−借入',15],['純資産',16],['借入残高',17],['投資追加',19]];
+function renderTable(){if(!lastResult)return;const cols=columns.filter(c=>c[1]!==6||lastResult.kid4_has),hr=document.createElement('tr');cols.forEach(c=>{const th=document.createElement('th');th.textContent=c[0];hr.append(th);});$('tableHead').replaceChildren(hr);$('tableBody').replaceChildren();const filter=$('rowFilter').value,rows=lastResult.cashflow.filter(r=>filter==='debt'?r[17]>0:filter==='deficit'?r[18]<0:true);rows.forEach(r=>{const tr=document.createElement('tr');if(r[17]>0)tr.className='debt';cols.forEach(c=>{const td=document.createElement('td'),v=r[c[1]];td.textContent=c[1]>=7?format(v):v;if(c[1]>=7&&v<0)td.className='negative';tr.append(td);});$('tableBody').append(tr);});if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=cols.length;td.textContent='該当する年はありません。';tr.append(td);$('tableBody').append(tr);}}
+function downloadCSV(){if(!lastResult)return;const quote=v=>'"'+String(v).replace(/"/g,'""')+'"';const text='\ufeff'+[columns.map(c=>c[0]+(c[1]>=7?'（円）':'')),...lastResult.cashflow.map(r=>columns.map(c=>r[c[1]]))].map(r=>r.map(quote).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='lifeplan-cashflow.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+createForm();$('inputTab').onclick=()=>switchTab(false);$('resultTab').onclick=()=>{switchTab(true);renderCharts();};$('edit').onclick=()=>{switchTab(false);window.scrollTo({top:0,behavior:'smooth'});};$('planForm').addEventListener('submit',submit);$('planForm').addEventListener('change',syncConditional);$('planForm').addEventListener('input',e=>e.target.setCustomValidity&&e.target.setCustomValidity(''));$('yearSlider').oninput=renderCharts;$('rowFilter').onchange=renderTable;$('csv').onclick=downloadCSV;$('backup').onclick=downloadJson;$('restore').onclick=()=>$('restoreFile').click();$('restoreFile').onchange=e=>importJson(e.target.files[0]);let saveTimer;$('planForm').addEventListener('input',()=>{clearTimeout(saveTimer);saveTimer=setTimeout(saveLocal,450);});$('planForm').addEventListener('change',saveLocal);window.addEventListener('resize',renderCharts);load();
+// 結果表示直後、タブの幅が確定してからSVGを描画します。
+const observer=new MutationObserver(()=>{if(!$('resultPanel').hidden)requestAnimationFrame(renderCharts);});observer.observe($('resultPanel'),{attributes:true,attributeFilter:['hidden']});
+</script>
+</body></html>
