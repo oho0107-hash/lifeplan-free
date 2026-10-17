@@ -11,7 +11,7 @@ import re
 import time
 import urllib.error
 import urllib.request
-from guard import apply_patches, is_auto_publish_safe, UnsafePatch, engine_range
+from guard import apply_patches, apply_research_patches, is_auto_publish_safe, UnsafePatch, engine_range
 from cost_research import collect, registry, verify_ai_records
 from education_cost_audit import report as cost_coverage_report
 
@@ -124,6 +124,17 @@ def is_research_only_request(issue: str) -> bool:
     return asks_research and not asks_code
 
 
+def is_cost_parser_fix_request(issue: str) -> bool:
+    """Separate improvements to the fee collection engine from fee research.
+
+    Fix requests MUST NOT be translated into incidental changes to index.html.
+    """
+    t = issue.lower()
+    return bool('cost_research.py' in t or
+        (re.search(r'実費調査ai|実費調査エージェント|料金抽出|公式料金表', t) and
+         re.search(r'修正|改善|抽出漏れ|読み取り|解析|プログラム|回帰テスト', t)))
+
+
 def pretty(data):return json.dumps(data,ensure_ascii=False,indent=2)
 
 
@@ -131,11 +142,14 @@ def main():
     request=ISSUE_FILE.read_text(encoding='utf-8').strip()
     if not 12 <= len(request) <= 3000:
         raise ValueError('Requirement must be 12..3000 characters (no personal financial data)')
-    research_only=is_research_only_request(request)
+    cost_parser_fix=is_cost_parser_fix_request(request)
+    research_only=not cost_parser_fix and is_research_only_request(request)
     html=(REPO/'index.html').read_text(encoding='utf-8')
     start, end=engine_range(html)
     engine=(REPO/'engine.js').read_text(encoding='utf-8') if (REPO/'engine.js').exists() else html[start:end]+'\n'
-    base={'index.html':html,'engine.js':engine}
+    base={'index.html':html,'engine.js':engine,
+          'automation/cost_research.py':(REPO/'automation/cost_research.py').read_text(encoding='utf-8'),
+          'automation/test_cost_research.py':(REPO/'automation/test_cost_research.py').read_text(encoding='utf-8')}
     agents_dir=REPO/'agents'
     agents_context='\n'.join((agents_dir/name).read_text(encoding='utf-8')[:3500] for name in (
          '01_requirement_agent.md','02_expert_review_agents.md','03_development_agent.md','04_qa_agent.md') if (agents_dir/name).is_file())
@@ -247,14 +261,28 @@ def main():
         previous_feedback=''
         result=None
         for attempt in range(2):
-            proposed=ask('開発エージェント',dev_guide+'\n編集は engine.js / index.html の exact old/new パッチのみ。engine.jsの同一内容はindex.htmlへプログラムが自動転写する。index.html内の組み込みengineは直接書き換えない。依存追加・外部通信・シークレット埋込禁止。既存の動作を壊さない最小変更。',
-             context+'\nCURRENT engine.js:\n'+base['engine.js']+'\nCURRENT index.html (whole):\n'+base['index.html']+
-             '\n前回レビューの指摘:'+previous_feedback+
-             '\nJSON format: {"changes":[{"file":"engine.js or index.html","old":"exact substring","new":"replacement substring"}],"explanation":"...","new_tests":["test case names"]}. old must occur EXACTLY once; no markdown.',12500)
+            if cost_parser_fix:
+                proposed=ask('実費調査プログラム開発エージェント',
+                   '編集は automation/cost_research.py と automation/test_cost_research.py の2ファイルだけ。'
+                   '両方に必ず意味のあるexact old/newパッチを入れ、実際の抽出漏れを再現するテストを追加。'
+                   '許可済みの学校公式URLだけを取得する安全境界を維持し、APIキー、ワークフロー、アプリ本体、依存関係、'
+                   '別ファイルは編集禁止。既存データと料金の単位を捏造しない。',
+                   context[:18000]+'\nCURRENT automation/cost_research.py:\n'+base['automation/cost_research.py']+
+                   '\nCURRENT automation/test_cost_research.py:\n'+base['automation/test_cost_research.py']+
+                   '\n前回レビューの指摘:'+previous_feedback+
+                   '\nJSON format: {"changes":[{"file":"automation/cost_research.py or automation/test_cost_research.py","old":"exact original substring","new":"replacement string"}],"explanation":"...","new_tests":["actual test names"]}. '
+                   'Both allowed files must change; old must appear exactly once. No markdown.',12500)
+            else:
+                proposed=ask('開発エージェント',dev_guide+'\n編集は engine.js / index.html の exact old/new パッチのみ。engine.jsの同一内容はindex.htmlへプログラムが自動転写する。index.html内の組み込みengineは直接書き換えない。依存追加・外部通信・シークレット埋込禁止。既存の動作を壊さない最小変更。',
+                 context+'\nCURRENT engine.js:\n'+base['engine.js']+'\nCURRENT index.html (whole):\n'+base['index.html']+
+                 '\n前回レビューの指摘:'+previous_feedback+
+                 '\nJSON format: {"changes":[{"file":"engine.js or index.html","old":"exact substring","new":"replacement substring"}],"explanation":"...","new_tests":["test case names"]}. old must occur EXACTLY once; no markdown.',12500)
             try:
-                candidate=apply_patches(base,proposed.get('changes'))
+                candidate=(apply_research_patches(base,proposed.get('changes')) if cost_parser_fix
+                           else apply_patches(base,proposed.get('changes')))
             except (UnsafePatch,TypeError,KeyError) as ex:
                 previous_feedback='Invalid patch: '+str(ex)
+                print(f'Development attempt {attempt+1}/2 rejected: {previous_feedback[:260]}',flush=True)
                 continue
             check=ask('独立品質ゲートエージェント','開発者の修正案を批判的にレビュー。とくに計算式・安全性・要件・変更の妥当性を検査。未検証の制度を正確と断定しない。issuesには修正で新規導入した重大・高リスクのブロッカーのみ記載。既存の別件問題はreasoningに記載。',
               context[:19000]+'\n開発パッチ:\n'+pretty(proposed)[:21000]+
@@ -263,7 +291,15 @@ def main():
                 result=(candidate,proposed,check)
                 break
             previous_feedback=pretty(check)[:3500]
-        if result is None:raise RuntimeError('Agent quality gate rejected two patch attempts. Nothing was published.')
+            print(f'Quality review attempt {attempt+1}/2 rejected: {previous_feedback[:500]}',flush=True)
+        if result is None:
+            OUT.mkdir(parents=True, exist_ok=True)
+            (OUT/'AI_FAILURE.md').write_text(
+                '# AI修正の診断\n\n2回の修正案が承認されませんでした。公開なし。\n\n'
+                '変更対象: '+('実費調査プログラムと回帰テスト' if cost_parser_fix else 'Webアプリ')+
+                '\n\n最後の指摘（外部秘匿情報を含めないこと）:\n```\n'+previous_feedback[:3000]+'\n```\n',
+                encoding='utf-8')
+            raise RuntimeError('Agent patch or independent quality review rejected two attempts. See AI_FAILURE.md artifact. Nothing published.')
         candidate,proposed,check=result
         safe=is_auto_publish_safe(base,candidate)
     report_parts+=['','## 開発内容','```json',pretty(proposed),'```','', '## 最終独立品質ゲート','```json',pretty(check),'```',
@@ -273,14 +309,18 @@ def main():
     import hashlib
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT/'base.sha256').write_text(hashlib.sha256(base['index.html'].encode('utf-8')).hexdigest()+'\n', encoding='utf-8')
+    (OUT/'base-hashes.json').write_text(pretty({path:hashlib.sha256(content.encode('utf-8')).hexdigest()
+                                                for path,content in base.items()})+'\n',encoding='utf-8')
     (OUT/'index.html').write_text(candidate['index.html'],encoding='utf-8')
     (OUT/'engine.js').write_text(candidate['engine.js'],encoding='utf-8')
+    (OUT/'cost_research.py').write_text(candidate['automation/cost_research.py'],encoding='utf-8')
+    (OUT/'test_cost_research.py').write_text(candidate['automation/test_cost_research.py'],encoding='utf-8')
     (OUT/'AI_REVIEW.md').write_text('\n'.join(report_parts)+'\n',encoding='utf-8')
     (OUT/'COST_EVIDENCE.json').write_text(pretty(cost_catalog)+'\n',encoding='utf-8')
     (OUT/'COST_COVERAGE.json').write_text(pretty(cost_coverage)+'\n',encoding='utf-8')
     (OUT/'release.env').write_text('AUTO_CSS_ONLY='+('true' if safe else 'false')+'\n',encoding='utf-8')
-    print('Created '+('research-only evidence PR' if research_only else 'app patch PR')+
+    print('Created '+('research-only evidence PR' if research_only else ('cost parser improvement PR' if cost_parser_fix else 'app patch PR'))+
           '; six reviewers completed; verified fee rows:',len(cost_records),
-          '; app code modified:',not research_only,'; CSS-only auto-publish:',safe,flush=True)
+          '; app code modified:',not research_only and not cost_parser_fix, '; research parser changed:',cost_parser_fix,'; CSS-only auto-publish:',safe,flush=True)
 
 if __name__=='__main__': main()

@@ -1,6 +1,7 @@
 """Fail-closed patch application and release risk detection. No external dependencies."""
 from pathlib import Path
 import re
+import ast
 
 ENGINE_END = "})(typeof window!=='undefined'?window:globalThis);"
 START = '/* LIFE Financial Studio'
@@ -57,6 +58,69 @@ def apply_patches(original, edits):
     if result == original:
         raise UnsafePatch('No effective changes')
     return result
+
+RESEARCH_ALLOWED = {'automation/cost_research.py', 'automation/test_cost_research.py'}
+RESEARCH_SAFE_IMPORTS = frozenset({
+    '__future__', 'datetime', 'io', 'html', 'json', 're', 'ssl',
+    'unicodedata', 'urllib', 'pathlib', 'pypdf', 'unittest',
+    'cost_research', 'typing', 'collections', 'decimal', 'textwrap',
+    'math', 'itertools', 'functools',
+})
+RESEARCH_FORBIDDEN_ADDITIONS = (
+    'GEMINI_API_KEY', 'GITHUB_TOKEN', 'os.environ', 'subprocess',
+    'socket.', 'eval(', 'exec(', '__import__(', 'compile(',
+    'import os', 'import sys', 'import requests', 'import importlib',
+)
+
+
+def _roots_imported(tree):
+    roots = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            roots.update(alias.name.split('.')[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            roots.add(node.module.split('.')[0])
+    return roots
+
+
+def apply_research_patches(original, edits):
+    """Allow only evidence parser AND its regression tests to change together.
+
+    The edited Python is NEVER executed in the AI generation or PR publication
+    jobs. It runs only in an isolated verification job without GitHub write
+    credentials or the AI key, followed by mandatory human review.
+    """
+    if not isinstance(edits, list) or not 2 <= len(edits) <= 12:
+        raise UnsafePatch('Research code change requires 2..12 exact patches, including a regression test')
+    result = original.copy()
+    files_changed = set()
+    for patch in edits:
+        if not isinstance(patch, dict) or set(patch) != {'file', 'old', 'new'}:
+            raise UnsafePatch('Patch must contain only file, old and new')
+        path, old, new = patch['file'], patch['old'], patch['new']
+        if path not in RESEARCH_ALLOWED or not isinstance(old, str) or not isinstance(new, str):
+            raise UnsafePatch('Research agent may edit only cost_research.py and its test file')
+        if old == new:
+            continue
+        if any(blocked in new and blocked not in old for blocked in RESEARCH_FORBIDDEN_ADDITIONS):
+            raise UnsafePatch('Research patch contains a credential/network/unsafe-code marker')
+        result[path] = replace_once(result[path], old, new)
+        files_changed.add(path)
+    if files_changed != RESEARCH_ALLOWED:
+        raise UnsafePatch('Research code and regression tests must both be changed')
+    for path in RESEARCH_ALLOWED:
+        if len(result[path]) > (70000 if path.endswith('/cost_research.py') else 30000):
+            raise UnsafePatch('Research patch exceeds file size limit')
+        try:
+            orig_ast = ast.parse(original[path], filename=path)
+            updated_ast = ast.parse(result[path], filename=path)
+        except SyntaxError as e:
+            raise UnsafePatch('Research patch is not valid Python syntax: '+str(e)) from e
+        added_imports = _roots_imported(updated_ast) - _roots_imported(orig_ast)
+        if not added_imports <= RESEARCH_SAFE_IMPORTS:
+            raise UnsafePatch('Non-allowlisted new Python import: '+str(sorted(added_imports - RESEARCH_SAFE_IMPORTS)))
+    return result
+
 
 def only_css_changed(old_html, new_html):
     """Auto-publish if and only if the only difference is within a single existing style block."""
