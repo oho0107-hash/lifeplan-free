@@ -24,10 +24,17 @@ ISSUE_FILE = Path(os.getenv('ISSUE_FILE','/tmp/lifeplan_issue.txt'))
 OUT = Path(os.getenv('AGENT_OUTPUT','agent-output'))
 REPO = Path(os.getenv('PROJECT_ROOT','.'))
 MAX_CALLS = 28
+MAX_JSON_REPAIRS = 2
+MAX_REPAIR_INPUT_CHARS = 85000
 _calls = 0
 
 
-def ask(role, instruction, prompt, limit=3500):
+class _InvalidJSONResponse(ValueError):
+    """A malformed AI payload, not an API/auth/quota error."""
+
+
+
+def ask(role, instruction, prompt, limit=3500, _repair_mode=False):
     """Make a bounded Free-tier Gemini request with transient-error fallback.
 
     First two attempts use the configured free model. On 503/5xx, try an
@@ -83,8 +90,41 @@ def ask(role, instruction, prompt, limit=3500):
     parts=raw.get('candidates',[{}])[0].get('content',{}).get('parts',[])
     txt=''.join(x.get('text','') for x in parts)
     if not txt.strip():raise RuntimeError(f'{role}: empty Gemini response')
-    try:return json.loads(txt)
-    except json.JSONDecodeError as e:raise RuntimeError(f'{role}: not valid JSON: {e}') from None
+    try:
+        return json.loads(txt)
+    except json.JSONDecodeError as exc:
+        detail = f'{exc.msg} at line {exc.lineno}, column {exc.colno}'
+        # Do not silently alter \d, \n, quotes or other escapes in source patches.
+        # An approximate local "repair" could change the code the agent intended.
+        if _repair_mode:
+            raise _InvalidJSONResponse(detail) from None
+        if len(txt) > MAX_REPAIR_INPUT_CHARS:
+            raise RuntimeError(f'{role}: malformed JSON too large for safe repair ({detail}); nothing published') from None
+        malformed = txt
+        for repair in range(1, MAX_JSON_REPAIRS + 1):
+            print(f'{role}: invalid Gemini JSON ({detail}); asking for syntax-only repair {repair}/{MAX_JSON_REPAIRS}', flush=True)
+            try:
+                return ask(
+                    role + ' JSON構文修正',
+                    'Return exactly one syntactically valid JSON response. Repair JSON serialization ONLY. '
+                    'Correct invalid backslash escapes (e.g. a literal backslash in code requires \\\\ in JSON), '
+                    'unescaped newlines, and unescaped quotes. Preserve EVERY key, value, file name, '
+                    'old and new patch content, and list order exactly. Do not shorten, invent, execute, '
+                    'or reinterpret the patch. Output ONLY JSON, no markdown.',
+                    'Fix only the JSON encoding of this preceding response. Keep the original patch text unchanged '
+                    'after JSON decoding:\n' + malformed,
+                    limit=limit,
+                    _repair_mode=True,
+                )
+            except _InvalidJSONResponse as repair_exc:
+                detail = str(repair_exc)
+                # Future repair attempts can be made from the original payload.
+                # Never swallow API errors such as 401, 403 or 429.
+                continue
+        raise RuntimeError(
+            f'{role}: JSON remained invalid after {MAX_JSON_REPAIRS} syntax-repair attempts '
+            f'({detail}). Nothing was published.'
+        ) from None
 
 
 def requested_change_scope(issue_body: str) -> str:
