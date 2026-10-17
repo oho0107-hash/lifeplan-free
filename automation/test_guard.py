@@ -1,5 +1,10 @@
 """Local safety checks. Run without internet, AI or GitHub secrets."""
+import io
+import json
 import unittest
+from unittest import mock
+import urllib.error
+
 from guard import apply_patches, apply_research_patches, is_auto_publish_safe, UnsafePatch, sync_engine
 
 END="})(typeof window!=='undefined'?window:globalThis);"
@@ -67,5 +72,61 @@ class TestResearchPatchGuard(unittest.TestCase):
                 {'file':'automation/cost_research.py','old':'return int(value)','new':'return('},
                 {'file':'automation/test_cost_research.py','old':'assert verify_price("100") == 100', 'new':'assert verify_price("100") == 101'},
             ])
+
+class TestGeminiJSONRepair(unittest.TestCase):
+    """No real network traffic, free API calls, or credentials are used."""
+
+    def response(self, model_text):
+        payload = {'candidates':[{'content':{'parts':[{'text': model_text}]}}]}
+        return io.BytesIO(json.dumps(payload).encode('utf-8'))
+
+    def test_invalid_regex_escape_is_repaired_without_changing_code(self):
+        import agent_runner
+        code = 'r"\\d+"'
+        original = {'changes':[{'file':'automation/cost_research.py',
+                                'old':'return 1','new':code}]}
+        correct = json.dumps(original)
+        broken = correct.replace('\\\\d', '\\d')
+        with self.assertRaises(json.JSONDecodeError):
+            json.loads(broken)
+        with mock.patch.object(agent_runner, 'KEY', 'TEST_KEY_NOT_REAL'), \
+             mock.patch.object(agent_runner, '_calls', 0), \
+             mock.patch.object(agent_runner.urllib.request, 'urlopen', side_effect=[self.response(broken),self.response(correct)]) as call:
+            result = agent_runner.ask('test', 'json', 'generate', limit=900)
+            self.assertEqual(result, original)
+            self.assertEqual(call.call_count, 2)
+            self.assertEqual(agent_runner._calls, 2)
+
+    def test_twice_invalid_repairs_stop_without_publishing(self):
+        import agent_runner
+        broken = r'{"changes":[{"old":"\d"}]}'
+        with self.assertRaises(json.JSONDecodeError):
+            json.loads(broken)
+        with mock.patch.object(agent_runner, 'KEY', 'TEST_KEY_NOT_REAL'), \
+             mock.patch.object(agent_runner, '_calls', 0), \
+             mock.patch.object(agent_runner.urllib.request, 'urlopen',side_effect=lambda *args, **kwargs: self.response(broken)) as call:
+            with self.assertRaisesRegex(RuntimeError,'after 2 syntax-repair attempts'):
+                agent_runner.ask('test', 'json', 'generate', limit=1000)
+            self.assertEqual(call.call_count, 3)
+
+    def test_quota_error_during_repair_stops_immediately(self):
+        import agent_runner
+        broken = r'{"changes":[{"old":"\d"}]}'
+        quota = urllib.error.HTTPError('https://example.invalid', 429, 'quota', {}, io.BytesIO(b'quota reached'))
+        with mock.patch.object(agent_runner, 'KEY', 'TEST_KEY_NOT_REAL'), \
+             mock.patch.object(agent_runner, '_calls', 0), \
+             mock.patch.object(agent_runner.urllib.request, 'urlopen',side_effect=[self.response(broken),quota]) as call:
+            with self.assertRaisesRegex(RuntimeError,'HTTP 429'):
+                agent_runner.ask('test','json','generate',limit=1000)
+            self.assertEqual(call.call_count, 2)
+
+    def test_valid_payload_still_one_call(self):
+        import agent_runner
+        valid = json.dumps({'summary':'OK', 'changes':[]})
+        with mock.patch.object(agent_runner,'KEY','TEST_KEY_NOT_REAL'), \
+             mock.patch.object(agent_runner, '_calls', 0), \
+             mock.patch.object(agent_runner.urllib.request,'urlopen',return_value=self.response(valid)) as call:
+            self.assertEqual(agent_runner.ask('test','json','generate'), {'summary':'OK', 'changes':[]})
+            self.assertEqual(call.call_count, 1)
 
 if __name__=='__main__':unittest.main()
