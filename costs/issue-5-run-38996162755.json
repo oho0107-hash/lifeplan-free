@@ -1,0 +1,232 @@
+{
+  "status": "verified_official_price_excerpts_not_full_budget",
+  "selection_scope": "named_school_in_user_request",
+  "retrieved_sources": [
+    {
+      "school": "開成中学校",
+      "url": "https://kaiseigakuen.jp/about/expenses/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-17T02:45:38.734819+00:00",
+      "reason": null
+    },
+    {
+      "school": "渋谷教育学園幕張中学校",
+      "url": "https://www.shibumaku.jp/admissions/tuition/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-17T02:45:39.746121+00:00",
+      "reason": null
+    },
+    {
+      "school": "市川中学校",
+      "url": "https://www.ichigaku.ac.jp/junior-exam/outline/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-17T02:45:41.391531+00:00",
+      "reason": null
+    },
+    {
+      "school": "早稲田アカデミー 小6 Sコース",
+      "url": "https://www.waseda-ac.co.jp/elementary/course/sixth/outline.html",
+      "status": "ok",
+      "year": null,
+      "fetched_at": "2026-10-17T02:45:42.473459+00:00",
+      "reason": null
+    }
+  ],
+  "records": [
+    {
+      "school": "開成中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "kaisei_jhs_2026",
+      "source_url": "https://kaiseigakuen.jp/about/expenses/",
+      "fetched_at": "2026-10-17T02:45:38.734819+00:00",
+      "cost_name": "学級費(学年旅行費・教材費等)",
+      "amount_yen": 160000,
+      "cost_type": "materials",
+      "course_or_grade": "中学1年",
+      "bill_includes": "年額",
+      "period": "annual",
+      "quote": "学級費(学年旅行費・教材費等、2026 度第 1 学年は 160,000 円)",
+      "required": true,
+      "notes": "第1学年の金額"
+    },
+    {
+      "school": "渋谷教育学園幕張中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "shibumaku_jhs_2026",
+      "source_url": "https://www.shibumaku.jp/admissions/tuition/",
+      "fetched_at": "2026-10-17T02:45:39.746121+00:00",
+      "cost_name": "入学金",
+      "amount_yen": 300000,
+      "cost_type": "admission",
+      "course_or_grade": "中学1年",
+      "bill_includes": "入学手続時納入",
+      "period": "once",
+      "quote": "入学金 300,000円",
+      "required": true,
+      "notes": "入学手続時に納入"
+    },
+    {
+      "school": "渋谷教育学園幕張中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "shibumaku_jhs_2026",
+      "source_url": "https://www.shibumaku.jp/admissions/tuition/",
+      "fetched_at": "2026-10-17T02:45:39.746121+00:00",
+      "cost_name": "施設拡充費",
+      "amount_yen": 150000,
+      "cost_type": "facility",
+      "course_or_grade": "中学1年",
+      "bill_includes": "入学後納入",
+      "period": "once",
+      "quote": "施設拡充費 150,000円",
+      "required": true,
+      "notes": "入学後に納入"
+    },
+    {
+      "school": "渋谷教育学園幕張中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "shibumaku_jhs_2026",
+      "source_url": "https://www.shibumaku.jp/admissions/tuition/",
+      "fetched_at": "2026-10-17T02:45:39.746121+00:00",
+      "cost_name": "授業料",
+      "amount_yen": 39000,
+      "cost_type": "tuition",
+      "course_or_grade": "中学全学年",
+      "bill_includes": "月額",
+      "period": "monthly",
+      "quote": "授業料 39,000円",
+      "required": true,
+      "notes": "毎月の納入金"
+    },
+    {
+      "school": "渋谷教育学園幕張中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "shibumaku_jhs_2026",
+      "source_url": "https://www.shibumaku.jp/admissions/tuition/",
+      "fetched_at": "2026-10-17T02:45:39.746121+00:00",
+      "cost_name": "教材費",
+      "amount_yen": 80000,
+      "cost_type": "materials",
+      "course_or_grade": "中学全学年",
+      "bill_includes": "年額目安",
+      "period": "annual",
+      "quote": "教材費(年80,000円程度)",
+      "required": true,
+      "notes": "預り金として"
+    },
+    {
+      "school": "市川中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "ichikawa_jhs_2026",
+      "source_url": "https://www.ichigaku.ac.jp/junior-exam/outline/",
+      "fetched_at": "2026-10-17T02:45:41.391531+00:00",
+      "cost_name": "入学金",
+      "amount_yen": 330000,
+      "cost_type": "admission",
+      "course_or_grade": "中学1年",
+      "bill_includes": "入学手続時納入",
+      "period": "once",
+      "quote": "入学金 330,000円",
+      "required": true,
+      "notes": "入学手続時納付金"
+    },
+    {
+      "school": "市川中学校",
+      "stage": "junior_high",
+      "year": 2026,
+      "source_id": "ichikawa_jhs_2026",
+      "source_url": "https://www.ichigaku.ac.jp/junior-exam/outline/",
+      "fetched_at": "2026-10-17T02:45:41.391531+00:00",
+      "cost_name": "授業料",
+      "amount_yen": 39000,
+      "cost_type": "tuition",
+      "course_or_grade": "中学全学年",
+      "bill_includes": "月額",
+      "period": "monthly",
+      "quote": "授業料 39,000円",
+      "required": true,
+      "notes": "2026年度の月額"
+    },
+    {
+      "school": "早稲田アカデミー 小6 Sコース",
+      "stage": "cram_elementary",
+      "year": null,
+      "source_id": "waseda_academy_jhs_exam_s6",
+      "source_url": "https://www.waseda-ac.co.jp/elementary/course/sixth/outline.html",
+      "fetched_at": "2026-10-17T02:45:42.473459+00:00",
+      "cost_name": "受講料(4科コース)",
+      "amount_yen": 54900,
+      "cost_type": "tuition",
+      "course_or_grade": "小学6年",
+      "bill_includes": "月額",
+      "period": "monthly",
+      "quote": "4科コース:54,900円/月",
+      "required": true,
+      "notes": "税込"
+    },
+    {
+      "school": "早稲田アカデミー 小6 Sコース",
+      "stage": "cram_elementary",
+      "year": null,
+      "source_id": "waseda_academy_jhs_exam_s6",
+      "source_url": "https://www.waseda-ac.co.jp/elementary/course/sixth/outline.html",
+      "fetched_at": "2026-10-17T02:45:42.473459+00:00",
+      "cost_name": "年会費",
+      "amount_yen": 2900,
+      "cost_type": "management",
+      "course_or_grade": "小学6年",
+      "bill_includes": "月額",
+      "period": "monthly",
+      "quote": "別途年会費2,900円/月",
+      "required": true,
+      "notes": "税込"
+    }
+  ],
+  "rejected": [
+    {
+      "source_id": "kaisei_jhs_2026",
+      "name": "入学金",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_jhs_2026",
+      "name": "施設拡充資金",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_jhs_2026",
+      "name": "授業料",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "ichikawa_jhs_2026",
+      "name": "施設整備・運営費",
+      "reason": "no independently matched official quote/amount"
+    }
+  ],
+  "not_checked": [
+    "開成中学校の制服代",
+    "開成中学校の通学費",
+    "渋谷教育学園幕張中学校の制服代",
+    "渋谷教育学園幕張中学校の通学費",
+    "市川中学校の制服代",
+    "市川中学校の通学費",
+    "早稲田アカデミーの教材費・必修テスト代・講習会費の具体的な金額"
+  ],
+  "limitations": [
+    "This registry only covers named registered schools; missing fees are NOT zero.",
+    "Allowances, scholarships and subsidies require separate eligibility verification.",
+    "Optional services, uniforms, exam costs, inflation and student housing require itemized sources.",
+    "Cost snapshots are NOT user family information. Do not auto-change baseline rules.",
+    "When selection_scope is illustrative_candidates_not_user_confirmed, NEVER put these prices into main user baseline automatically."
+  ],
+  "coverage_note": "教育費の全14カテゴリをチェック。未確認は0円ではない。登録校は本人の進学希望校とは限らない。"
+}
