@@ -1,0 +1,748 @@
+{
+  "schema_version": 1,
+  "purpose": "review_only_do_not_auto_apply",
+  "education_fee_stages": [
+    {
+      "stage": "nursery",
+      "label": "保育園・認定こども園（0〜2歳）",
+      "registered_official_sources": 1,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "admission",
+          "name": "入学・入園金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "meals",
+          "name": "給食・食費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "supplies",
+          "name": "保育用品",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "extended_care",
+          "name": "延長保育",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "events",
+          "name": "行事・発表会費",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "partially_researched",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "kindergarten",
+      "label": "幼稚園・認定こども園（3〜5歳）",
+      "registered_official_sources": 1,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "admission",
+          "name": "入学・入園金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "facility",
+          "name": "施設・教育充実・管理費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "meals",
+          "name": "給食・食費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "uniform",
+          "name": "制服・体操服",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "extended_care",
+          "name": "延長保育",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "events",
+          "name": "行事・発表会費",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "partially_researched",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "elementary",
+      "label": "小学校",
+      "registered_official_sources": 1,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "admission",
+          "name": "入学・入園金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "facility",
+          "name": "施設・教育充実・管理費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "meals",
+          "name": "給食・食費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "uniform",
+          "name": "制服・体操服",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "device",
+          "name": "指定端末・PC",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "trip",
+          "name": "修学旅行・研修旅行",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "activity",
+          "name": "学校会費・部活動",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "exams",
+          "name": "入試・受験料",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "partially_researched",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "junior_high",
+      "label": "中学校",
+      "registered_official_sources": 3,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "admission",
+          "name": "入学・入園金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "facility",
+          "name": "施設・教育充実・管理費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "meals",
+          "name": "給食・食費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "uniform",
+          "name": "制服・体操服",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "device",
+          "name": "指定端末・PC",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "trip",
+          "name": "修学旅行・研修旅行",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "activity",
+          "name": "学校会費・部活動",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "exams",
+          "name": "入試・受験料",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "partially_researched",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "high_school",
+      "label": "高校",
+      "registered_official_sources": 2,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "admission",
+          "name": "入学・入園金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "facility",
+          "name": "施設・教育充実・管理費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "meals",
+          "name": "給食・食費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "uniform",
+          "name": "制服・体操服",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "device",
+          "name": "指定端末・PC",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "trip",
+          "name": "修学旅行・研修旅行",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "activity",
+          "name": "学校会費・部活動",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "exams",
+          "name": "入試・受験料",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "partially_researched",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "university",
+      "label": "大学・学部学科別",
+      "registered_official_sources": 2,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "admission",
+          "name": "入学・入園金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "facility",
+          "name": "施設・教育充実・管理費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "lab",
+          "name": "実験・実習費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "device",
+          "name": "指定端末・PC",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "activity",
+          "name": "学校会費・部活動",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "exams",
+          "name": "入試・受験料",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "partially_researched",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "cram_elementary",
+      "label": "小学生・中学受験塾",
+      "registered_official_sources": 2,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "enrollment",
+          "name": "入塾金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "testing",
+          "name": "模試・確認テスト",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "seasonal_course",
+          "name": "春・夏・冬の講習",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "special_course",
+          "name": "特訓・志望校別講座",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "facility",
+          "name": "施設・教育充実・管理費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "partially_researched",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "cram_junior_high",
+      "label": "中学生・高校受験塾",
+      "registered_official_sources": 0,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "enrollment",
+          "name": "入塾金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "testing",
+          "name": "模試・確認テスト",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "seasonal_course",
+          "name": "春・夏・冬の講習",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "special_course",
+          "name": "特訓・志望校別講座",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "facility",
+          "name": "施設・教育充実・管理費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "requires_source_registration",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "cram_high_school",
+      "label": "高校生・大学受験塾",
+      "registered_official_sources": 1,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "enrollment",
+          "name": "入塾金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "testing",
+          "name": "模試・確認テスト",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "seasonal_course",
+          "name": "春・夏・冬の講習",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "special_course",
+          "name": "特訓・志望校別講座",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "facility",
+          "name": "施設・教育充実・管理費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "partially_researched",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "prep_school",
+      "label": "予備校・高卒生コース",
+      "registered_official_sources": 2,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "enrollment",
+          "name": "入塾金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "testing",
+          "name": "模試・確認テスト",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "seasonal_course",
+          "name": "春・夏・冬の講習",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "special_course",
+          "name": "特訓・志望校別講座",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "facility",
+          "name": "施設・教育充実・管理費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "partially_researched",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "private_tutor",
+      "label": "家庭教師・個別指導",
+      "registered_official_sources": 0,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "enrollment",
+          "name": "入塾金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "facility",
+          "name": "施設・教育充実・管理費",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "requires_source_registration",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "lessons",
+      "label": "習い事",
+      "registered_official_sources": 1,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "enrollment",
+          "name": "入塾金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "tuition",
+          "name": "保育料・授業料・通常受講料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "materials",
+          "name": "教材・教科書・文具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "equipment",
+          "name": "習い事の道具・用具",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "events",
+          "name": "行事・発表会費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "partially_researched",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "exam",
+      "label": "入試・併願・受験関連",
+      "registered_official_sources": 0,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "exams",
+          "name": "入試・受験料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "travel",
+          "name": "遠方受験の交通・宿泊",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "application",
+          "name": "出願書類・手数料",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "deposit",
+          "name": "入学金等の併願先前払い・敷金・保証金",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "requires_source_registration",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    },
+    {
+      "stage": "housing",
+      "label": "大学生の一人暮らし",
+      "registered_official_sources": 0,
+      "verified_fee_entries": 0,
+      "documented_fee_types": [],
+      "unconfirmed_fee_types": [
+        {
+          "fee_type": "rent",
+          "name": "家賃",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "management",
+          "name": "管理費・共益費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "deposit",
+          "name": "入学金等の併願先前払い・敷金・保証金",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "moving",
+          "name": "引越費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "utilities",
+          "name": "光熱・水道費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "food",
+          "name": "生活食費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "communication",
+          "name": "通信費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "insurance",
+          "name": "保険・更新費",
+          "status": "not_confirmed_not_zero"
+        },
+        {
+          "fee_type": "transport",
+          "name": "通学・通塾交通費",
+          "status": "not_confirmed_not_zero"
+        }
+      ],
+      "state": "requires_source_registration",
+      "source_only_subtotal_yen": null,
+      "why_no_subtotal": "Sources can cover different schools/grades. Never add fees across providers."
+    }
+  ],
+  "registered_source_count": 16,
+  "all_known_costs_are_for_comparison_only": true,
+  "missing_costs_are_not_zero": true,
+  "note": "費目が0円・対象外なのかは学校・コース単位で追加確認。任意項目は選択時だけ加算。"
+}
