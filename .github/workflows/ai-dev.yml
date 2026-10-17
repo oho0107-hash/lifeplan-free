@@ -51,6 +51,7 @@ jobs:
           PROJECT_ROOT: .
         run: python automation/agent_runner.py
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: proposed-app
           path: agent-output/
@@ -74,6 +75,9 @@ jobs:
         run: |
           cp agent-output/index.html index.html
           cp agent-output/engine.js engine.js
+          cp agent-output/cost_research.py automation/cost_research.py
+          cp agent-output/test_cost_research.py automation/test_cost_research.py
+          python -m py_compile automation/cost_research.py automation/test_cost_research.py
           node --check engine.js
           python -m unittest discover -s automation -p test_guard.py -q
           python -m unittest discover -s automation -p test_cost_research.py -q
@@ -113,14 +117,18 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
         run: |
           python - <<'PY'
-          import hashlib,pathlib
-          expected=pathlib.Path('agent-output/base.sha256').read_text().strip()
-          current=hashlib.sha256(pathlib.Path('index.html').read_bytes()).hexdigest()
-          if current != expected:raise SystemExit('main has changed during review; re-run AI on newest revision')
+          import hashlib,json,pathlib
+          hashes=json.loads(pathlib.Path('agent-output/base-hashes.json').read_text())
+          for path,expected in hashes.items():
+              current=hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
+              if current != expected:
+                  raise SystemExit(f'{path} changed during review; re-run AI on newest revision')
           PY
           mkdir -p reviews costs
           cp agent-output/index.html index.html
           cp agent-output/engine.js engine.js
+          cp agent-output/cost_research.py automation/cost_research.py
+          cp agent-output/test_cost_research.py automation/test_cost_research.py
           cp agent-output/AI_REVIEW.md "reviews/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.md"
           cp agent-output/COST_EVIDENCE.json "costs/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json"
           cp agent-output/COST_COVERAGE.json "costs/coverage-issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json"
@@ -128,7 +136,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           branch="ai/issue-${ISSUE_NUMBER}-${GITHUB_RUN_ID}"
           git checkout -b "$branch"
-          git add index.html engine.js "reviews/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.md" "costs/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json" "costs/coverage-issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json"
+          git add index.html engine.js automation/cost_research.py automation/test_cost_research.py "reviews/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.md" "costs/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json" "costs/coverage-issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json"
           git commit -m "AI reviewed change for issue #${ISSUE_NUMBER}"
           git push --set-upstream origin "$branch"
           echo "AI_BRANCH=$branch" >> "$GITHUB_ENV"
