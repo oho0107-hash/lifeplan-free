@@ -104,6 +104,26 @@ def requested_change_scope(issue_body: str) -> str:
     return text.strip()
 
 
+
+def is_research_only_request(issue: str) -> bool:
+    """Do not demand a code patch when the owner asked only for fee evidence.
+
+    Check the positive request before any constraints; prohibitions such as
+    "do not modify the app" must not be interpreted as a feature request.
+    Ambiguous cases are treated as development (requiring an explicit patch).
+    """
+    primary = re.split(
+        r'(?mi)^\s*(?:#{1,4}\s*)?(?:\*\*)?(?:開発条件|禁止事項|制約|修正禁止事項)(?:\*\*)?\s*[:：]?\s*$',
+        issue, maxsplit=1)[0]
+    asks_research = bool(re.search(
+        r'実費調査|学費調査|料金調査|調査を依頼|調査レポート|費用の比較|根拠付きの実費', primary))
+    asks_code = bool(re.search(
+        r'(?:アプリ|画面|機能|コード|計算式|ロジック).{0,24}(?:追加|変更|実装|修正|反映|更新|改修)'
+        r'|(?:追加|実装|修正|改修|変更).{0,24}(?:アプリ|画面|機能|コード|計算式|ロジック)',
+        primary))
+    return asks_research and not asks_code
+
+
 def pretty(data):return json.dumps(data,ensure_ascii=False,indent=2)
 
 
@@ -111,6 +131,7 @@ def main():
     request=ISSUE_FILE.read_text(encoding='utf-8').strip()
     if not 12 <= len(request) <= 3000:
         raise ValueError('Requirement must be 12..3000 characters (no personal financial data)')
+    research_only=is_research_only_request(request)
     html=(REPO/'index.html').read_text(encoding='utf-8')
     start, end=engine_range(html)
     engine=(REPO/'engine.js').read_text(encoding='utf-8') if (REPO/'engine.js').exists() else html[start:end]+'\n'
@@ -139,7 +160,7 @@ def main():
     cost_unavailable = [s for s in official_snapshots if s['status'] != 'ok']
     if official_snapshots:
         available = [s for s in official_snapshots if s['status'] == 'ok']
-        if not available:
+        if not available and not research_only:
             raise RuntimeError('All official cost pages were unavailable. Stopped without inventing tuition costs.')
         sources_for_ai = [{k:v for k,v in s.items() if k in (
             'id','school','stage','year','url','fetched_at','text')} for s in available]
@@ -152,13 +173,16 @@ def main():
            'ユーザー要望: '+request+'\n現時点で取得した学校公式ページの抜粋:\n'+
            pretty(sources_for_ai)[:49000]+
            '\nJSON keys: records (list of objects: source_id,cost_name,cost_type(admission/tuition/facility/meals/uniform/materials/device/trip/transport/activity/exams/lab/enrollment/testing/seasonal_course/special_course/equipment/extended_care/events/supplies/travel/application/deposit/rent/management/moving/utilities/food/communication/insurance/other),course_or_grade,bill_includes,amount_yen integer,period once/monthly/annual/per_event,required bool,quote exact,notes), missing (list[str]), assumptions (list[str]).'
-           '最大30項目。表の合計値と内訳を一度に予算へ加えない。公式ページに数字がなければ項目を作らない。',6500)
+           '最大30項目。表の合計値と内訳を一度に予算へ加えない。公式ページに数字がなければ項目を作らない。',6500) if available else {
+               'records':[], 'missing':['登録済み公式料金ページを取得できず、料金の検証ができませんでした。'],
+               'assumptions':[]}
         cost_records, cost_rejected = verify_ai_records(research.get('records',[]),official_snapshots)
-        if not cost_records:
+        if not cost_records and not research_only:
             raise RuntimeError('No official fee claims passed quote verification; do not change the app numbers.')
         # These figures are reference inputs ONLY. Calculated total must enumerate
         # compulsory vs optional, tuition vs cram, and avoid double counting.
-        cost_catalog = {'status':'verified_official_price_excerpts_not_full_budget',
+        cost_catalog = {'status':('verified_official_price_excerpts_not_full_budget'
+                                  if cost_records else 'INCOMPLETE_no_verified_fee_quotes_do_not_calculate'),
             'selection_scope': 'named_school_in_user_request' if matched_requested_school else 'illustrative_candidates_not_user_confirmed',
             'retrieved_sources':[{'school':s['school'],'url':s['url'],'status':s['status'],
                                    'year':s['year'],'fetched_at':s.get('fetched_at'),
@@ -171,7 +195,10 @@ def main():
                            'Cost snapshots are NOT user family information. Do not auto-change baseline rules.',
                            'When selection_scope is illustrative_candidates_not_user_confirmed, NEVER put these prices into main user baseline automatically.']}
     else:
-        cost_catalog = {'status':'not_requested','records':[], 'retrieved_sources':[], 'rejected':[], 'not_checked':[]}
+        cost_catalog = {'status':('INCOMPLETE_no_registered_sources_for_request'
+                                  if research_only else 'not_requested'),
+                        'records':[], 'retrieved_sources':[], 'rejected':[],
+                        'not_checked':['指定した学校・塾の公式情報が登録されていません。追加調査が必要です。'] if research_only else []}
     # Comprehensive stage/fee matrix. Missing amount is NEVER numeric zero.
     # Only the fetched official source excerpts are audited; unselected schools
     # are not silently treated as free or automatically chosen.
@@ -200,28 +227,45 @@ def main():
          '\n未確認費用チェック（未確認≠0円）:\n'+pretty(cost_coverage)[:6000]+
          '\n実費調査がサンプル比較で候補校未確認の場合、その数値を既存アプリの標準費用に直結させない。')
     dev_guide=(agents_dir/'03_development_agent.md').read_text(encoding='utf-8')[:3000] if (agents_dir/'03_development_agent.md').is_file() else ''
-    previous_feedback=''
-    result=None
-    for attempt in range(2):
-        proposed=ask('開発エージェント',dev_guide+'\n編集は engine.js / index.html の exact old/new パッチのみ。engine.jsの同一内容はindex.htmlへプログラムが自動転写する。index.html内の組み込みengineは直接書き換えない。依存追加・外部通信・シークレット埋込禁止。既存の動作を壊さない最小変更。',
-         context+'\nCURRENT engine.js:\n'+base['engine.js']+'\nCURRENT index.html (whole):\n'+base['index.html']+
-         '\n前回レビューの指摘:'+previous_feedback+
-         '\nJSON format: {"changes":[{"file":"engine.js or index.html","old":"exact substring","new":"replacement substring"}],"explanation":"...","new_tests":["test case names"]}. old must occur EXACTLY once; no markdown.',12500)
-        try:
-            candidate=apply_patches(base,proposed.get('changes'))
-        except (UnsafePatch,TypeError,KeyError) as ex:
-            previous_feedback='Invalid patch: '+str(ex)
-            continue
-        check=ask('独立品質ゲートエージェント','開発者の修正案を批判的にレビュー。とくに計算式・安全性・要件・変更の妥当性を検査。未検証の制度を正確と断定しない。issuesには修正で新規導入した重大・高リスクのブロッカーのみ記載。既存の別件問題はreasoningに記載。',
-          context[:19000]+'\n開発パッチ:\n'+pretty(proposed)[:21000]+
-          '\nJSON keys: approved (bool), issues (list[str]), missing_tests (list[str]), reasoning (str).',2500)
-        if check.get('approved') is True and isinstance(check.get('issues',[]),list) and not check.get('issues'):
-            result=(candidate,proposed,check)
-            break
-        previous_feedback=pretty(check)[:3500]
-    if result is None:raise RuntimeError('Agent quality gate rejected two patch attempts. Nothing was published.')
-    candidate,proposed,check=result
-    safe=is_auto_publish_safe(base,candidate)
+    if research_only:
+        # Research requests produce a PR with evidence/reviews/coverage only.
+        # Never invent an HTML/engine change to satisfy the mandatory patch gate.
+        candidate=base.copy()
+        proposed={'changes':[], 'explanation':'実費調査専用。アプリの計算式・表示・入力は変更していません。',
+                  'new_tests':['公式ソースの引用検証', '未確認費用の未確認表示']}
+        check={'approved':bool(cost_records),
+               'issues':([] if cost_records else ['公式ページから検証できた金額がありません。費用総額は算出できません。']),
+               'missing_tests':['進学候補校と必要費目の確定', '必要費目の欠落確認', '二重計上と補助金の別計算'],
+               'reasoning':'実額は公式料金の原文と数値が一致した行のみ記録。根拠不足は不明と表示し、計算には反映しない。',
+               'mode':'documentary_evidence_only'}
+        safe=False
+        report_parts += ['', '## 調査専用モード：アプリ本体は変更なし',
+            '学校別の公式料金の証拠と未確認費目を提出します。教育費の標準金額には自動反映しません。',
+            '未確認費用は0円ではありません。料金の単純合計は学校・コース・対象年度が混ざるため行いません。',
+            '根拠付き料金が0件の場合は不完全な調査結果であり、費用推計の完了とはみなしません。']
+    else:
+        previous_feedback=''
+        result=None
+        for attempt in range(2):
+            proposed=ask('開発エージェント',dev_guide+'\n編集は engine.js / index.html の exact old/new パッチのみ。engine.jsの同一内容はindex.htmlへプログラムが自動転写する。index.html内の組み込みengineは直接書き換えない。依存追加・外部通信・シークレット埋込禁止。既存の動作を壊さない最小変更。',
+             context+'\nCURRENT engine.js:\n'+base['engine.js']+'\nCURRENT index.html (whole):\n'+base['index.html']+
+             '\n前回レビューの指摘:'+previous_feedback+
+             '\nJSON format: {"changes":[{"file":"engine.js or index.html","old":"exact substring","new":"replacement substring"}],"explanation":"...","new_tests":["test case names"]}. old must occur EXACTLY once; no markdown.',12500)
+            try:
+                candidate=apply_patches(base,proposed.get('changes'))
+            except (UnsafePatch,TypeError,KeyError) as ex:
+                previous_feedback='Invalid patch: '+str(ex)
+                continue
+            check=ask('独立品質ゲートエージェント','開発者の修正案を批判的にレビュー。とくに計算式・安全性・要件・変更の妥当性を検査。未検証の制度を正確と断定しない。issuesには修正で新規導入した重大・高リスクのブロッカーのみ記載。既存の別件問題はreasoningに記載。',
+              context[:19000]+'\n開発パッチ:\n'+pretty(proposed)[:21000]+
+              '\nJSON keys: approved (bool), issues (list[str]), missing_tests (list[str]), reasoning (str).',2500)
+            if check.get('approved') is True and isinstance(check.get('issues',[]),list) and not check.get('issues'):
+                result=(candidate,proposed,check)
+                break
+            previous_feedback=pretty(check)[:3500]
+        if result is None:raise RuntimeError('Agent quality gate rejected two patch attempts. Nothing was published.')
+        candidate,proposed,check=result
+        safe=is_auto_publish_safe(base,candidate)
     report_parts+=['','## 開発内容','```json',pretty(proposed),'```','', '## 最終独立品質ゲート','```json',pretty(check),'```',
        '', '## 本番公開ゲート',
        '**CSSのみの差分：自動公開候補**' if safe else '**承認必須：ロジック／HTML／非CSS変更**',
@@ -235,6 +279,8 @@ def main():
     (OUT/'COST_EVIDENCE.json').write_text(pretty(cost_catalog)+'\n',encoding='utf-8')
     (OUT/'COST_COVERAGE.json').write_text(pretty(cost_coverage)+'\n',encoding='utf-8')
     (OUT/'release.env').write_text('AUTO_CSS_ONLY='+('true' if safe else 'false')+'\n',encoding='utf-8')
-    print('Generated patch; six specialist reviewers, full-scope education-cost evidence agent and independent QA completed. CSS-only auto-publish?',safe)
+    print('Created '+('research-only evidence PR' if research_only else 'app patch PR')+
+          '; six reviewers completed; verified fee rows:',len(cost_records),
+          '; app code modified:',not research_only,'; CSS-only auto-publish:',safe,flush=True)
 
 if __name__=='__main__': main()
