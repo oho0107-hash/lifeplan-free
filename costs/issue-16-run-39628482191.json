@@ -1,0 +1,218 @@
+{
+  "status": "verified_official_price_excerpts_not_full_budget",
+  "selection_scope": "named_school_in_user_request",
+  "retrieved_sources": [
+    {
+      "school": "開成中学校",
+      "url": "https://kaiseigakuen.jp/about/expenses/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-21T15:45:26.217235+00:00",
+      "reason": null
+    },
+    {
+      "school": "明治大学 理工学部",
+      "url": "https://www.meiji.ac.jp/suito/mkmht000002b7evj-att/2026gakubu.pdf",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-21T15:45:27.255743+00:00",
+      "reason": null
+    },
+    {
+      "school": "開成高等学校",
+      "url": "https://kaiseigakuen.jp/about/expenses/",
+      "status": "ok",
+      "year": 2026,
+      "fetched_at": "2026-10-21T15:45:28.108941+00:00",
+      "reason": null
+    }
+  ],
+  "records": [
+    {
+      "school": "開成高等学校",
+      "stage": "high_school",
+      "year": 2026,
+      "source_id": "kaisei_hs_2026",
+      "source_url": "https://kaiseigakuen.jp/about/expenses/",
+      "fetched_at": "2026-10-21T15:45:28.108941+00:00",
+      "cost_name": "学級費",
+      "amount_yen": 100000,
+      "cost_type": "materials",
+      "course_or_grade": "高等学校第1学年",
+      "bill_includes": "学年旅行費・教材費等",
+      "period": "annual",
+      "quote": "学級費(学年旅行費・教材費等、2026 年度第 1 学年は 計100,000円",
+      "evidence_kind": "html_prose",
+      "evidence_section": "学費 / 高等学校",
+      "required": true,
+      "grade_scope": "first_year_only",
+      "notes": "上記以外にお預かりします"
+    },
+    {
+      "school": "開成高等学校",
+      "stage": "high_school",
+      "year": 2026,
+      "source_id": "kaisei_hs_2026",
+      "source_url": "https://kaiseigakuen.jp/about/expenses/",
+      "fetched_at": "2026-10-21T15:45:28.108941+00:00",
+      "cost_name": "指定端末の購入費用",
+      "amount_yen": 30000,
+      "cost_type": "device",
+      "course_or_grade": "高等学校第1学年",
+      "bill_includes": "ICT 環境整備に伴う指定端末の購入費用（3 年間分の保守費用含む）",
+      "period": "once",
+      "quote": "ICT 環境整備に伴う指定端末の購入費用として、別途 30,000 円程度が第 1 学年において必要となります",
+      "evidence_kind": "source_text",
+      "evidence_section": "",
+      "required": true,
+      "grade_scope": "unknown",
+      "notes": "30,000円程度"
+    },
+    {
+      "school": "明治大学 理工学部",
+      "stage": "university",
+      "year": 2026,
+      "source_id": "meiji_science_2026",
+      "source_url": "https://www.meiji.ac.jp/suito/mkmht000002b7evj-att/2026gakubu.pdf",
+      "fetched_at": "2026-10-21T15:45:27.255743+00:00",
+      "cost_name": "入学金",
+      "amount_yen": 200000,
+      "cost_type": "admission",
+      "course_or_grade": "明治大学 理工学部",
+      "bill_includes": "1年次入学時",
+      "period": "once",
+      "quote": "入学金 200,000",
+      "evidence_kind": "source_text",
+      "evidence_section": "",
+      "required": true,
+      "grade_scope": "unknown",
+      "notes": "初年度のみ納入"
+    },
+    {
+      "school": "明治大学 理工学部",
+      "stage": "university",
+      "year": 2026,
+      "source_id": "meiji_science_2026",
+      "source_url": "https://www.meiji.ac.jp/suito/mkmht000002b7evj-att/2026gakubu.pdf",
+      "fetched_at": "2026-10-21T15:45:27.255743+00:00",
+      "cost_name": "学生健康保険互助組合費",
+      "amount_yen": 3000,
+      "cost_type": "insurance",
+      "course_or_grade": "明治大学 理工学部",
+      "bill_includes": "諸会費",
+      "period": "annual",
+      "quote": "学生健康保険互助組合費 3,000",
+      "evidence_kind": "source_text",
+      "evidence_section": "",
+      "required": true,
+      "grade_scope": "unknown",
+      "notes": "春学期に諸会費として徴収"
+    },
+    {
+      "school": "明治大学 理工学部",
+      "stage": "university",
+      "year": 2026,
+      "source_id": "meiji_science_2026",
+      "source_url": "https://www.meiji.ac.jp/suito/mkmht000002b7evj-att/2026gakubu.pdf",
+      "fetched_at": "2026-10-21T15:45:27.255743+00:00",
+      "cost_name": "父母会費",
+      "amount_yen": 12000,
+      "cost_type": "activity",
+      "course_or_grade": "明治大学 理工学部",
+      "bill_includes": "年額",
+      "period": "annual",
+      "quote": "父母会費 12,000",
+      "evidence_kind": "source_text",
+      "evidence_section": "",
+      "required": true,
+      "grade_scope": "unknown",
+      "notes": "学費と併せて毎年徴収"
+    },
+    {
+      "school": "明治大学 理工学部",
+      "stage": "university",
+      "year": 2026,
+      "source_id": "meiji_science_2026",
+      "source_url": "https://www.meiji.ac.jp/suito/mkmht000002b7evj-att/2026gakubu.pdf",
+      "fetched_at": "2026-10-21T15:45:27.255743+00:00",
+      "cost_name": "校友会費",
+      "amount_yen": 30000,
+      "cost_type": "activity",
+      "course_or_grade": "明治大学 理工学部",
+      "bill_includes": "終身会費",
+      "period": "once",
+      "quote": "校友会費(終身会費30,000円)は、4年次に徴収します。",
+      "evidence_kind": "source_text",
+      "evidence_section": "",
+      "required": true,
+      "grade_scope": "unknown",
+      "notes": "4年次に徴収"
+    }
+  ],
+  "rejected": [
+    {
+      "source_id": "kaisei_hs_2026",
+      "name": "入学金",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_hs_2026",
+      "name": "施設拡充資金",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_hs_2026",
+      "name": "授業料",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_hs_2026",
+      "name": "施設維持費",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_hs_2026",
+      "name": "実験実習料",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_hs_2026",
+      "name": "父母と先生の会会費",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_hs_2026",
+      "name": "生徒会会費",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "kaisei_hs_2026",
+      "name": "寄付金",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "meiji_science_2026",
+      "name": "授業料",
+      "reason": "no independently matched official quote/amount"
+    },
+    {
+      "source_id": "meiji_science_2026",
+      "name": "教育充実料",
+      "reason": "no independently matched official quote/amount"
+    }
+  ],
+  "not_checked": [
+    "制服代",
+    "教材費(教科書代等・大学)",
+    "通学費",
+    "学校外活動費・塾費用"
+  ],
+  "limitations": [
+    "This registry only covers named registered schools; missing fees are NOT zero.",
+    "Allowances, scholarships and subsidies require separate eligibility verification.",
+    "Optional services, uniforms, exam costs, inflation and student housing require itemized sources.",
+    "Cost snapshots are NOT user family information. Do not auto-change baseline rules.",
+    "When selection_scope is illustrative_candidates_not_user_confirmed, NEVER put these prices into main user baseline automatically."
+  ],
+  "coverage_note": "教育費の全14カテゴリをチェック。未確認は0円ではない。登録校は本人の進学希望校とは限らない。"
+}
