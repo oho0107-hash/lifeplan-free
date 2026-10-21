@@ -18,10 +18,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Package only the app HTML (never secrets or review files)
+      - name: Package only approved public pages and official source links
         run: |
-          mkdir public
-          cp index.html public/index.html
+          set -euo pipefail
+          mkdir -p public/costs
+          cp index.html education-reserve.html public/
+          cp costs/official_sources.json public/costs/official_sources.json
+          # Do not publish API keys, Python automation, private family data,
+          # internal reviews, or unverified experimental research artifacts.
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

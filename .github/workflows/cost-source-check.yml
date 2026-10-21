@@ -1,4 +1,4 @@
-name: Check official education prices
+name: Weekly official school price watch
 'on':
   schedule:
     - cron: '15 1 * * 1'
@@ -6,11 +6,13 @@ name: Check official education prices
 
 permissions:
   contents: read
+  actions: read
+  issues: write
 
 jobs:
   audit-official-pages:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -18,13 +20,55 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install PDF text parser (free)
+      - name: Install free PDF text reader
         run: python -m pip install 'pypdf>=5,<7'
-      - name: Recheck registered official school and provider pages
-        run: python automation/cost_freshness.py
-      - name: Upload dated source status report
-        uses: actions/upload-artifact@v4
+      - name: Retrieve prior successful run's report when possible
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          mkdir -p reports/previous
+          previous=$(gh run list --workflow cost-source-check.yml --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+          if [ -n "$previous" ]; then
+            gh run download "$previous" -n official-school-prices-status -D reports/previous || true
+          fi
+      - name: Fetch official school fees and compare evidence fingerprints
+        shell: bash
+        run: |
+          set -euo pipefail
+          python automation/cost_freshness.py
+          python automation/source_change_report.py \
+            --old reports/previous/official_cost_source_check.json \
+            --new reports/official_cost_source_check.json \
+            --out reports/official_cost_changes.json
+          python -m unittest discover -s automation -p test_source_change_report.py -q
+      - name: Open alert Issue only when registered page contents changed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json,os,subprocess,pathlib
+          result=json.loads(pathlib.Path('reports/official_cost_changes.json').read_text())
+          if not result['source_change_count']:
+              print('No changed official excerpts; no issue created.');raise SystemExit(0)
+          title='【学費更新要確認】公式料金ページ変更の検出'
+          text=['料金表の掲載内容が変化した可能性があります。確認が必要です。',
+                '価格が値上がりしたとは限らず、**アプリの準備額を自動変更しません**。','']
+          for c in result['changes']:
+              text.append(f"- {c['id']}: {c['message']} — {c['url']}")
+          existing=subprocess.check_output(['gh','issue','list','--state','open','--limit','100',
+             '--json','title','--jq','.[].title'],text=True)
+          if title in existing.splitlines():
+              print('An existing open cost-watch issue is already present.');raise SystemExit(0)
+          subprocess.run(['gh','issue','create','--title',title,'--body','\n'.join(text)],check=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: official-school-prices-status
-          path: reports/official_cost_source_check.json
-          retention-days: 30
+          path: |
+            reports/official_cost_source_check.json
+            reports/official_cost_changes.json
+            reports/official_cost_candidates.json
+          retention-days: 45
