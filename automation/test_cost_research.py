@@ -47,6 +47,15 @@ def from_candidate(candidate, sid):
 
 
 class TableEvidenceTest(unittest.TestCase):
+    def test_university_faculty_prices_are_not_mixed(self):
+        html=('<h1>大学 学納金</h1><h2>法学部</h2>'
+              '<table><tr><td>授業料 (年額)</td><td>900,000円</td></tr></table>'
+              '<h2>理工学部</h2>'
+              '<table><tr><td>授業料 (年額)</td><td>1,450,000円</td></tr></table>')
+        result=extract_table_fees(html,'university','明治大学 理工学部')
+        self.assertEqual([r['amount_yen'] for r in result],[1450000])
+        self.assertEqual(extract_table_fees(html,'university','明治大学 商学部'),[])
+
     def test_kaisei_multiline_and_middle_school_only(self):
         rows=extract_table_fees(KA,'junior_high')
         found={(r['cost_name'],r['amount_yen'],r['period']) for r in rows}

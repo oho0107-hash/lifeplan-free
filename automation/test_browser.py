@@ -43,6 +43,18 @@ try:
         page.locator('#calculate').click()
         assert page.locator('#debtAlert').is_visible(),'資金不足の表示がない'
         print('PASS: shortage displayed')
+        # Evidence-linked education reserve is a separate draft scenario.
+        page.goto(f'http://127.0.0.1:{server.server_port}/education-reserve.html')
+        page.locator('#provider').fill('架空高校')
+        page.locator('#entry').fill('2030')
+        page.locator('#add').click()
+        page.locator('[data-i="0"][data-k="amount"]').fill('10000')
+        page.locator('[data-i="0"][data-k="evidence"]').fill('仮の授業料 10,000円')
+        page.locator('[data-i="0"][data-k="url"]').fill('https://example.edu/price')
+        page.locator('#calc').click()
+        assert '未完成' in page.locator('#state').inner_text(), '未確認費用があるのに十分額と表示された'
+        assert '円' in page.locator('#reserve').inner_text(), '安心準備額が計算されない'
+        print('PASS: iPhone education reserve, known fees and incomplete coverage')
         browser.close()
 finally:
     server.shutdown()
