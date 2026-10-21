@@ -26,3 +26,12 @@ test('公開アプリにGemini APIキー・外部スクリプトが埋まって�
   assert.ok(!/AIza[0-9A-Za-z_-]{25,}/.test(html),'API key found');
   assert.ok(!/<script\s+[^>]*src\s*=/i.test(html),'external script');
 });
+
+test('教育費専用画面は公表根拠と未確認費用の扱いを示す',()=>{
+  const page=fs.readFileSync('education-reserve.html','utf8');
+  assert.match(page,/教育費の安心準備額/);
+  assert.match(page,/未完成/);
+  assert.match(page,/university/);
+  assert.match(page,/costs\/official_sources\.json/);
+  assert.match(html,/education-reserve\.html/);
+});

@@ -83,6 +83,10 @@ jobs:
           python -m unittest discover -s automation -p test_cost_research.py -q
           python -m unittest discover -s automation -p test_education_cost_audit.py -q
           python -m unittest discover -s automation -p test_education_cost_budget.py -q
+          python -m unittest discover -s automation -p test_assurance_budget.py -q
+          python -m unittest discover -s automation -p test_release_policy.py -q
+          python -m unittest discover -s automation -p test_source_change_report.py -q
+          python -m unittest discover -s automation -p test_registered_prices.py -q
           node --test automation/test_smoke.cjs
           if test -f tests/engine.test.cjs; then node --test tests/engine.test.cjs; fi
       - uses: actions/setup-python@v5
@@ -142,7 +146,7 @@ jobs:
           echo "AI_BRANCH=$branch" >> "$GITHUB_ENV"
       - name: Open reviewed pull request
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.LIFEPLAN_PR_TOKEN || github.token }}
           ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
         run: |
           pr=$(gh pr create --base main --head "$AI_BRANCH" \
@@ -150,13 +154,37 @@ jobs:
             --body "要望 #${ISSUE_NUMBER} を6分野のAIと実費調査AIがレビューし、独立品質ゲートと自動操作テストを通過しました。変更点と未検証項目は reviews/ 内の今回のレポートに記載しています。計算や制度に関する変更は必ず人が確認してください。")
           echo "PR_URL=$pr" >> "$GITHUB_ENV"
           gh issue comment "$ISSUE_NUMBER" --body "AIから修正提案を作成しました: $pr 。提案コードの内部テスト実行済み。別の pr-quality-gate チェック合格と差分確認の後に Merge pull request を押してください。"
+      - name: Detect safe-only changes using actual git diff
+        run: |
+          python automation/release_policy.py > /tmp/lifeplan_release_scope
+          cat /tmp/lifeplan_release_scope
+          echo "RELEASE_SCOPE=$(cat /tmp/lifeplan_release_scope)" >> "$GITHUB_ENV"
+      - name: Auto-merge documentary or CSS-only changes after protected checks
+        # Optional fine-grained token enables non-pending PR workflow triggers.
+        # GitHub enforces the required PR check before an auto-merge takes place.
+        if: ${{ env.RELEASE_SCOPE == 'evidence_only' || env.RELEASE_SCOPE == 'cosmetic_only' }}
+        env:
+          GH_TOKEN: ${{ secrets.LIFEPLAN_PR_TOKEN || github.token }}
+          HAS_PR_TOKEN: ${{ secrets.LIFEPLAN_PR_TOKEN != '' }}
+        run: |
+          if [ "$HAS_PR_TOKEN" != 'true' ]; then
+            echo 'No dedicated token. PR stays open for manual checks and merge.'
+            exit 0
+          fi
+          echo "Auto-merge eligible scope: $RELEASE_SCOPE. Branch protection must remain enabled."
+          gh pr merge "$PR_URL" --auto --squash || echo 'Auto-merge unavailable; PR remains open and requires review.'
       # Pull requests created with GITHUB_TOKEN can have PR checks pending approval.
       # Explicit workflow_dispatch always starts a new independent run against
       # the proposed branch's head SHA; require pr-quality-gate before merging.
-      - name: Dispatch independent PR quality checks
+      - name: Dispatch independent PR quality checks (fallback without dedicated token)
         env:
+          HAS_PR_TOKEN: ${{ secrets.LIFEPLAN_PR_TOKEN != '' }}
           GH_TOKEN: ${{ github.token }}
         run: |
+          if [ "$HAS_PR_TOKEN" = 'true' ]; then
+            echo 'Dedicated token used: regular PR checks will run automatically.'
+            exit 0
+          fi
           gh workflow run pr-quality-gate.yml --ref "$AI_BRANCH"
           echo "Independent check started for $AI_BRANCH."
           echo "Do NOT merge the PR until pr-quality-gate succeeds."

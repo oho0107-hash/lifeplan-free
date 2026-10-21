@@ -201,7 +201,15 @@ class FeeTableParser(HTMLParser):
             if norm(data):self.context_parts.append(norm(data))
 
 
-def extract_table_fees(raw_html: str, stage: str) -> list[dict]:
+def _faculty_matches(section: str, stage: str, provider_name: str | None) -> bool:
+    if stage != 'university' or not provider_name:
+        return True
+    # Never adopt prices from another faculty on a common tuition page.
+    match = re.search(r'([^ /　]+学部)', provider_name)
+    return bool(match and match.group(1) in section)
+
+
+def extract_table_fees(raw_html: str, stage: str, provider_name: str | None = None) -> list[dict]:
     """Build exact table-row fee candidates, with no automatic cost adoption.
 
     A table can have parallel multiline labels and prices (e.g. Kaisei),
@@ -211,7 +219,7 @@ def extract_table_fees(raw_html: str, stage: str) -> list[dict]:
     parser=FeeTableParser();parser.feed(raw_html)
     found=[];seen=set()
     for row_id, section, cells, note in parser.table_rows[:550]:
-        if not _scope_matches(section,stage) or len(cells)<2:continue
+        if not _scope_matches(section,stage) or not _faculty_matches(section,stage,provider_name) or len(cells)<2:continue
         labels=[norm(s) for s in cells[0].splitlines() if norm(s)]
         amounts=[norm(s) for s in cells[1].splitlines() if norm(s)]
         if not labels or not amounts:continue
@@ -232,7 +240,7 @@ def extract_table_fees(raw_html: str, stage: str) -> list[dict]:
     labels='|'.join(sorted((re.escape(x[0]) for x in FEE_LABELS),key=len,reverse=True))
     inline_re=re.compile(r'('+labels+r')([^。；;\n]{0,85}?)('+_YEN.pattern+r')')
     for section, prose in parser.prose_rows:
-        if not _scope_matches(section,stage):continue
+        if not _scope_matches(section,stage) or not _faculty_matches(section,stage,provider_name):continue
         for match in inline_re.finditer(prose):
             name=match.group(1)
             # The fragment may contain other fees (e.g. an illustrative parenthetical)
@@ -397,7 +405,7 @@ def fetch_source(source: dict, *, opener=urllib.request.urlopen) -> dict:
     else:
         html=raw.decode(charset,'replace')
         full=strip_html(html)
-        evidence_rows=extract_table_fees(html,source['stage'])
+        evidence_rows=extract_table_fees(html,source['stage'],source['school'])
         if evidence_rows:
             # Keep cross-cell fee associations in the AI prompt. AI-generated
             # lines still require independent numeric verification below.

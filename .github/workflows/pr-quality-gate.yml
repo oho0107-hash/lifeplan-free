@@ -46,13 +46,25 @@ jobs:
             test -s "$f" || { echo "Missing required file: $f"; exit 1; }
           done
           node --check engine.js
+          test -s education-reserve.html || { echo 'Missing education reserve page'; exit 1; }
+          python - <<'PYCODE'
+          import pathlib,re,subprocess,tempfile
+          page=pathlib.Path('education-reserve.html').read_text(encoding='utf-8')
+          script=re.search(r'<script>([\s\S]*?)</script>',page)
+          if not script:raise SystemExit('Missing inline reserve script')
+          with tempfile.NamedTemporaryFile(mode='w',suffix='.js',encoding='utf-8') as f:
+              f.write(script.group(1));f.flush()
+              subprocess.run(['node','--check',f.name],check=True)
+          PYCODE
 
       - name: Independent rule and finance regression tests
         shell: bash
         run: |
           set -euo pipefail
           for suite in test_guard.py test_cost_research.py \
-                       test_education_cost_audit.py test_education_cost_budget.py; do
+                       test_education_cost_audit.py test_education_cost_budget.py \
+                       test_assurance_budget.py test_release_policy.py test_source_change_report.py \
+                       test_registered_prices.py; do
             python -m unittest discover -s automation -p "$suite" -q
           done
           node --test automation/test_smoke.cjs
