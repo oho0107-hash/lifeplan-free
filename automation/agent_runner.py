@@ -59,10 +59,15 @@ def ask(role, instruction, prompt, limit=3500, _repair_mode=False):
     delays = [0, 3, 8, 18]
     for attempt, model in enumerate(models):
         if _calls >= MAX_CALLS:
-            raise RuntimeError('Gemini HTTP call safety limit reached; stopped without publishing')
+            raise RuntimeError(
+                f'Gemini HTTP call safety limit reached ({_calls}/{MAX_CALLS}) '
+                f'during {role[:60]}; stopped without publishing')
         if attempt:
             time.sleep(delays[attempt])
         _calls += 1
+        # Log only role/model/count, never request text, credentials, or family data.
+        print(f'Gemini call {_calls}/{MAX_CALLS} | role={role[:60]} '
+              f'| model={model} | try={attempt+1}/{len(models)}', flush=True)
         req = urllib.request.Request(
             'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent',
             data=data,
@@ -178,6 +183,37 @@ def is_cost_parser_fix_request(issue: str) -> bool:
 def pretty(data):return json.dumps(data,ensure_ascii=False,indent=2)
 
 
+def review_plan(cost_parser_fix: bool):
+    """Keep all six domain reviews for app/finance changes.
+
+    Fee-parser-only changes get the three relevant independent reviewers.
+    The deterministic patch guard, isolated tests and final quality gate are
+    unchanged. This saves model calls without raising the safety limit.
+    """
+    experts = [
+      ('家計FP','資産推移・赤字・インフレ・年金・教育ピークを検証'),
+      ('税務社会保険','育休・児童手当・年金・扶養・税と手取りの扱いを検証'),
+      ('教育制度','学年・多子大学減免・入学金・高校費用・進路を検証'),
+      ('住宅ローン金融','利息・変動金利・ボーナス返済・繰上返済と残債を検証'),
+      ('プライバシー','公開コードへの家計個人情報混入や外部送信を検証'),
+      ('QA','境界値・データ移行・ブラウザ操作・アクセシビリティを検証'),
+    ]
+    if cost_parser_fix:
+        allowed = {'教育制度', 'プライバシー', 'QA'}
+        return [(name, mission) for name, mission in experts if name in allowed]
+    return experts
+
+
+def review_code_context(cost_parser_fix: bool, base: dict) -> str:
+    """Review the files that a scoped change can actually affect."""
+    if cost_parser_fix:
+        return ('\n料金抽出エンジン（抜粋）:\n'
+                + base['automation/cost_research.py'][:12500]
+                + '\n抽出回帰テスト（抜粋）:\n'
+                + base['automation/test_cost_research.py'][:4000])
+    return '\n計算ソース:\n' + base['engine.js'][:19000]
+
+
 def main():
     request=ISSUE_FILE.read_text(encoding='utf-8').strip()
     if not 12 <= len(request) <= 3000:
@@ -258,21 +294,18 @@ def main():
     # are not silently treated as free or automatically chosen.
     cost_coverage=cost_coverage_report(cost_records, source_registry.get('sources',[]))
     cost_catalog['coverage_note']='教育費の全14カテゴリをチェック。未確認は0円ではない。登録校は本人の進学希望校とは限らない。'
-    # Six actual separate API invocations, no sharing of other reviewers' outputs.
-    experts=[
-      ('家計FP','資産推移・赤字・インフレ・年金・教育ピークを検証'),
-      ('税務社会保険','育休・児童手当・年金・扶養・税と手取りの扱いを検証'),
-      ('教育制度','学年・多子大学減免・入学金・高校費用・進路を検証'),
-      ('住宅ローン金融','利息・変動金利・ボーナス返済・繰上返済と残債を検証'),
-      ('プライバシー','公開コードへの家計個人情報混入や外部送信を検証'),
-      ('QA','境界値・データ移行・ブラウザ操作・アクセシビリティを検証')]
+    # Scoped parser changes do not spend Gemini calls reviewing unchanged
+    # mortgage, tax and household finance logic. Independent review remains.
+    experts = review_plan(cost_parser_fix)
+    if cost_parser_fix:
+        print('Scoped parser fix: 3 relevant reviewers; original 28-call limit retained.', flush=True)
     reviews={}
     for name,mission in experts:
         reviews[name]=ask(name+'レビューエージェント',mission+'。他のレビュー結果は見ずに独立して指摘する。外部サイトにアクセスできないため根拠が確認できない点は未確認とする。',
            '要望:'+request+'\n要件:'+pretty(requirements)[:6000]+
            '\n公式費用調査:\n'+pretty(cost_catalog)[:10000]+
-           '\n計算ソース:\n'+base['engine.js'][:19000]+
-           '\nJSON keys: findings (list of objects with severity, problem, proposed_fix, test, source_or_unverified), verdict (str).',2700)
+           review_code_context(cost_parser_fix, base)+
+           '\nJSON keys: findings (list of objects with severity, problem, proposed_fix, test, source_or_unverified), verdict (str).',2000 if cost_parser_fix else 2700)
     report_parts=['# AIレビュー・自動開発レポート','', '## 要望',request,'','## 要件検討', '```json',pretty(requirements),'```']
     report_parts += ['', '## 第7専門家: 教育費全領域の実費調査', '```json',pretty(cost_catalog),'```', '', '## 14領域の費目網羅チェック', '```json',pretty(cost_coverage),'```']
     for name,review in reviews.items():report_parts+=['',f'## 独立レビュー: {name}','```json',pretty(review),'```']
@@ -305,6 +338,7 @@ def main():
                 proposed=ask('実費調査プログラム開発エージェント',
                    '編集は automation/cost_research.py と automation/test_cost_research.py の2ファイルだけ。'
                    '両方に必ず意味のあるexact old/newパッチを入れ、実際の抽出漏れを再現するテストを追加。'
+                   '巨大なファイル全置換を避け、関数単位の小さなパッチに分けてJSONを短く保つ。'
                    '許可済みの学校公式URLだけを取得する安全境界を維持し、APIキー、ワークフロー、アプリ本体、依存関係、'
                    '別ファイルは編集禁止。既存データと料金の単位を捏造しない。',
                    context[:18000]+'\nCURRENT automation/cost_research.py:\n'+base['automation/cost_research.py']+

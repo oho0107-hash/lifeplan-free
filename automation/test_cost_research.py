@@ -214,5 +214,32 @@ class DuplicateFeeNameTest(unittest.TestCase):
         self.assertEqual(out['years'][0]['confirmed_subtotal_yen'],0)
         self.assertTrue(out['years'][0]['unresolved'])
 
+class ScopedAgentBudgetTest(unittest.TestCase):
+    def test_parser_fix_keeps_relevant_independent_reviewers(self):
+        from agent_runner import review_plan
+        names = [name for name, _ in review_plan(True)]
+        self.assertEqual(names, ['教育制度', 'プライバシー', 'QA'])
+        self.assertEqual(len(review_plan(False)), 6)
+
+    def test_parser_fix_reviews_parser_not_unchanged_household_engine(self):
+        from agent_runner import review_code_context
+        base = {'engine.js': 'unrelated_sensitive_engine',
+                'automation/cost_research.py': 'parser_code',
+                'automation/test_cost_research.py': 'parser_tests'}
+        ctx = review_code_context(True, base)
+        self.assertIn('parser_code', ctx)
+        self.assertIn('parser_tests', ctx)
+        self.assertNotIn('unrelated_sensitive_engine', ctx)
+        self.assertIn('unrelated_sensitive_engine', review_code_context(False, base))
+
+    def test_call_limit_still_stops_before_request_and_preserves_secret(self):
+        import agent_runner
+        from unittest.mock import patch
+        with patch.object(agent_runner, 'KEY', 'test-secret'), patch.object(agent_runner, '_calls', agent_runner.MAX_CALLS):
+            with self.assertRaisesRegex(RuntimeError, 'safety limit reached') as raised:
+                agent_runner.ask('テスト担当', 'test', 'payload')
+        self.assertNotIn('test-secret', str(raised.exception))
+
+
 if __name__ == '__main__':
     unittest.main()
