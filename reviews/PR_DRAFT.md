@@ -4,4 +4,4 @@
 
 検証: Python94件、Node5件、Chromiumの主要操作とバックアップ復元が成功。全6 workflowのactionlint成功。独立金融strict診断は既存High3件で失敗し、公開を禁止しています。詳細は reviews/setup-validation.md と reviews/initial-audit.md。
 
-未完了: 実GitHub Actions・モデルAPI・Issue→PR・実機Safari・新タスク復元。汎用の受入テスト自動生成/制度照合は未完のため、Issue候補を自動公開しません。計算・制度・金額・セキュリティ・workflow権限の重要変更として、承認前にマージ/公開しないでください。
+実GitHub PR品質CIはsuccess、金融診断CIはfailure。未完了: モデルAPI・自動Issue→PR・実機Safari・新タスク復元。汎用の受入テスト自動生成/制度照合は未完のため、Issue候補を自動公開しません。計算・制度・金額・セキュリティ・workflow権限の重要変更として、承認前にマージ/公開しないでください。
