@@ -5,30 +5,96 @@ name: LIFE publish Pages from tested main
   workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
   group: pages-deployment
   cancel-in-progress: false
 jobs:
-  deploy:
+  quality:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/quality-checks.yml
+    with:
+      evidence_name: main-quality-evidence
+    permissions:
+      contents: read
+  financial-release-gate:
+    needs: [quality]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Block publication while serious financial discrepancies remain
+        run: python automation/test_independent_finance.py --diagnose --output reports/finance-diagnostics.json --strict
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-finance-diagnostics
+          path: reports/finance-diagnostics.json
+          if-no-files-found: error
+  deploy:
+    needs: [quality, financial-release-gate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Package only approved public pages and official source links
+        with:
+          persist-credentials: false
+      - name: Package only public app assets
         run: |
           set -euo pipefail
           mkdir -p public/costs
           cp index.html education-reserve.html public/
           cp costs/official_sources.json public/costs/official_sources.json
-          # Do not publish API keys, Python automation, private family data,
-          # internal reviews, or unverified experimental research artifacts.
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
           path: public
       - uses: actions/deploy-pages@v4
         id: deployment
+  post-deploy-smoke:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Verify published documents and source registry through HTTPS
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          python - <<'PY'
+          import json, os, time, urllib.request
+          base = os.environ['PAGE_URL'].rstrip('/') + '/'
+          targets = [('index.html', b'LifeEngine'), ('education-reserve.html', b'id="reserve"'), ('costs/official_sources.json', b'"sources"')]
+          for path, expected in targets:
+              for attempt in range(3):
+                  try:
+                      with urllib.request.urlopen(base + path, timeout=30) as response:
+                          body = response.read()
+                      assert expected in body, 'Expected content absent'
+                      if path.endswith('.json'): json.loads(body)
+                      break
+                  except Exception:
+                      if attempt == 2: raise
+                      time.sleep(5)
+              print('PASS published asset:', path)
+          PY
+      # A failed smoke run never fabricates a rollback. The previous passing SHA
+      # must be re-published via a reviewed revert; see docs/IPHONE_OPERATIONS.md.

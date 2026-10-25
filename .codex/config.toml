@@ -1,0 +1,99 @@
+# Schema: openai/codex rust-v0.163.0 codex-rs/core/config.schema.json
+[features]
+multi_agent = true
+
+[agents]
+max_concurrent_threads_per_session = 6
+max_depth = 1
+
+[agents.a01_orchestrator]
+description = "A01 統括PM・オーケストレーター：変更要求を分類し、担当・依存順序・並列範囲を決め、証拠を集めPRまで進める"
+config_file = "agents/a01_orchestrator.toml"
+
+[agents.a02_requirements]
+description = "A02 要件定義：曖昧な指示から入力・出力・例外・受入条件を定義する"
+config_file = "agents/a02_requirements.toml"
+
+[agents.a03_architect]
+description = "A03 システム設計：既存構造とデータ互換性を調べ、計算と表示を分離する設計を作る"
+config_file = "agents/a03_architect.toml"
+
+[agents.a04_implementer]
+description = "A04 実装：承認済み要件に従い小さな単位で実装し回帰テストを追加する"
+config_file = "agents/a04_implementer.toml"
+
+[agents.a05_test_designer]
+description = "A05 テスト設計：正常・異常・境界・組合せと要件別の受入テストを設計する"
+config_file = "agents/a05_test_designer.toml"
+
+[agents.a06_independent_qa]
+description = "A06 独立QA：作成担当と独立して元要件・実コードから品質を検証する"
+config_file = "agents/a06_independent_qa.toml"
+
+[agents.a07_security]
+description = "A07 セキュリティ：個人情報・外部通信・依存・権限・プロンプト注入を検査する"
+config_file = "agents/a07_security.toml"
+
+[agents.a08_ux_accessibility]
+description = "A08 UI/UX・アクセシビリティ：iPhone Safariで入力負担・可読性・操作と支援技術対応を検証する"
+config_file = "agents/a08_ux_accessibility.toml"
+
+[agents.a09_devops]
+description = "A09 DevOps・自動化：既存CIを統合しPR・品質ゲート・公開・復旧を管理する"
+config_file = "agents/a09_devops.toml"
+
+[agents.b01_financial_planner]
+description = "B01 ファイナンシャルプランナーAI：生涯収支・貯蓄・老後・家族構成別教育資金を検証する"
+config_file = "agents/b01_financial_planner.toml"
+
+[agents.b02_tax]
+description = "B02 税務専門AI：所得税・住民税・扶養・配偶者・住宅控除と制度改正を調査する"
+config_file = "agents/b02_tax.toml"
+
+[agents.b03_legal_policy]
+description = "B03 法務・制度専門AI：現行法・施行日・経過措置・自治体差を検証する"
+config_file = "agents/b03_legal_policy.toml"
+
+[agents.b04_social_insurance]
+description = "B04 社会保険・労務専門AI：産休育休・給付・保険料免除・復職時短・年金を検証する"
+config_file = "agents/b04_social_insurance.toml"
+
+[agents.b05_education_cost]
+description = "B05 教育費専門AI：学校段階・進路・受験・塾・納付金・生活費を分離する"
+config_file = "agents/b05_education_cost.toml"
+
+[agents.b06_education_support]
+description = "B06 教育支援・補助金制度専門AI：無償化・児童手当・高校/大学支援・自治体補助を検証する"
+config_file = "agents/b06_education_support.toml"
+
+[agents.b07_mortgage]
+description = "B07 住宅ローン・不動産専門AI：返済方式・ボーナス・金利変更・繰上・住宅維持費を検証する"
+config_file = "agents/b07_mortgage.toml"
+
+[agents.b08_investment_economics]
+description = "B08 資産運用・経済専門AI：インフレ・賃金上昇・複利・リスク・資金ショートを検証する"
+config_file = "agents/b08_investment_economics.toml"
+
+[agents.b09_official_research]
+description = "B09 公的情報・実費調査AI：官公庁・自治体・学校等の公式情報と料金表を取得する"
+config_file = "agents/b09_official_research.toml"
+
+[agents.c01_devils_advocate]
+description = "C01 懐疑的レビューAI：多数決に頼らず前提・要件・式・例外に再現可能な反例を探す"
+config_file = "agents/c01_devils_advocate.toml"
+
+[agents.c02_independent_calculator]
+description = "C02 独立再計算AI：実装コードをコピーせず別言語/別アルゴリズムで再計算する"
+config_file = "agents/c02_independent_calculator.toml"
+
+[agents.c03_policy_auditor]
+description = "C03 制度反証・情報監査AI：一次資料を独立に読み年度・国自治体・例外・経過措置を反証する"
+config_file = "agents/c03_policy_auditor.toml"
+
+[agents.c04_fault_injection]
+description = "C04 障害注入・破壊的テストAI：極端入力・無効値・家族変化・支援終了・金利上昇で障害を探す"
+config_file = "agents/c04_fault_injection.toml"
+
+[agents.c05_final_auditor]
+description = "C05 最終監査AI：実装/要件担当から独立して証拠と未解決問題から最終判定する"
+config_file = "agents/c05_final_auditor.toml"

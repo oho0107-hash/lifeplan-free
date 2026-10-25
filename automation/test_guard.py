@@ -92,7 +92,7 @@ class TestGeminiJSONRepair(unittest.TestCase):
         with mock.patch.object(agent_runner, 'KEY', 'TEST_KEY_NOT_REAL'), \
              mock.patch.object(agent_runner, '_calls', 0), \
              mock.patch.object(agent_runner.urllib.request, 'urlopen', side_effect=[self.response(broken),self.response(correct)]) as call:
-            result = agent_runner.ask('test', 'json', 'generate', limit=900)
+            result = agent_runner.ask('QA', 'json', 'generate', limit=900)
             self.assertEqual(result, original)
             self.assertEqual(call.call_count, 2)
             self.assertEqual(agent_runner._calls, 2)
@@ -106,7 +106,7 @@ class TestGeminiJSONRepair(unittest.TestCase):
              mock.patch.object(agent_runner, '_calls', 0), \
              mock.patch.object(agent_runner.urllib.request, 'urlopen',side_effect=lambda *args, **kwargs: self.response(broken)) as call:
             with self.assertRaisesRegex(RuntimeError,'after 2 syntax-repair attempts'):
-                agent_runner.ask('test', 'json', 'generate', limit=1000)
+                agent_runner.ask('QA', 'json', 'generate', limit=1000)
             self.assertEqual(call.call_count, 3)
 
     def test_quota_error_during_repair_stops_immediately(self):
@@ -117,7 +117,7 @@ class TestGeminiJSONRepair(unittest.TestCase):
              mock.patch.object(agent_runner, '_calls', 0), \
              mock.patch.object(agent_runner.urllib.request, 'urlopen',side_effect=[self.response(broken),quota]) as call:
             with self.assertRaisesRegex(RuntimeError,'HTTP 429'):
-                agent_runner.ask('test','json','generate',limit=1000)
+                agent_runner.ask('QA','json','generate',limit=1000)
             self.assertEqual(call.call_count, 2)
 
     def test_valid_payload_still_one_call(self):
@@ -126,7 +126,7 @@ class TestGeminiJSONRepair(unittest.TestCase):
         with mock.patch.object(agent_runner,'KEY','TEST_KEY_NOT_REAL'), \
              mock.patch.object(agent_runner, '_calls', 0), \
              mock.patch.object(agent_runner.urllib.request,'urlopen',return_value=self.response(valid)) as call:
-            self.assertEqual(agent_runner.ask('test','json','generate'), {'summary':'OK', 'changes':[]})
+            self.assertEqual(agent_runner.ask('QA','json','generate'), {'summary':'OK', 'changes':[]})
             self.assertEqual(call.call_count, 1)
 
 if __name__=='__main__':unittest.main()

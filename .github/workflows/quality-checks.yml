@@ -1,0 +1,67 @@
+name: LIFE reusable isolated quality checks
+'on':
+  workflow_call:
+    inputs:
+      candidate:
+        type: boolean
+        default: false
+      evidence_name:
+        type: string
+        default: quality-evidence
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        if: inputs.candidate
+        with:
+          name: proposed-app
+          path: agent-output
+      - name: Retain the trusted baseline regression suite before installing candidates
+        if: inputs.candidate
+        run: |
+          mkdir -p "$RUNNER_TEMP/lifeplan-baseline"
+          cp automation/test_cost_research.py "$RUNNER_TEMP/lifeplan-baseline/test_cost_research.py"
+      - name: Install only allowlisted candidate files in the disposable test runner
+        if: inputs.candidate
+        run: |
+          set -euo pipefail
+          cp agent-output/index.html index.html
+          cp agent-output/engine.js engine.js
+          cp agent-output/cost_research.py automation/cost_research.py
+          cp agent-output/test_cost_research.py automation/test_cost_research.py
+      - name: Install open-source validation dependencies
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python -m playwright install --with-deps chromium
+      - name: Run unchanged baseline assertions against the candidate parser
+        if: inputs.candidate
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          PYTHONPATH="$PWD/automation" python -m unittest discover \
+            -s "$RUNNER_TEMP/lifeplan-baseline" -p test_cost_research.py -v \
+            2>&1 | tee reports/BASELINE_REGRESSION.log
+      - name: Execute required regression, independent calculation and mobile browser checks
+        run: python automation/orchestration.py verify --root . --out reports/RUN_EVIDENCE.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ inputs.evidence_name }}
+          path: reports/
+          if-no-files-found: error
+          retention-days: 14
