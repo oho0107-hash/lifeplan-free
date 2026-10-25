@@ -36,3 +36,9 @@ node --test automation/test_smoke.cjs
 ```
 
 ブラウザテストにはPlaywright Chromiumが必要（Actionsでインストール）。
+
+## 継続開発体制（今回の構築）
+
+自然言語の変更指示はCodexでこのリポジトリを開いて送ります。永続ルールは [AGENTS.md](AGENTS.md)、専門担当の設定は `.codex/agents/` にあります。環境の導入・起動は [クラウド環境手順](docs/environment.md)、証拠・未解決事項は `docs/` と `reviews/initial-audit.md` を参照してください。
+
+新しい品質ゲートは、テスト成功と制度の正しさを分けて記録します。重大な計算差異が残る間は新しいPages公開を停止します。既存公開サイトが修正済みになった意味ではありません。GitHubでのPR・公開・実機Safari検証の完了は、実際の結果が得られた場合だけ報告します。

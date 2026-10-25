@@ -8,6 +8,7 @@ from pathlib import PurePosixPath
 import re
 
 DOC_REVIEW=re.compile(r'^reviews/issue-[0-9]+-run-[0-9]+\.md$')
+DOC_EVIDENCE=re.compile(r'^reviews/(?:evidence|orchestration)-issue-[0-9]+-run-[0-9]+\.json$')
 DOC_COST=re.compile(r'^costs/(?:issue|coverage-issue)-[0-9]+-run-[0-9]+\.json$')
 
 
@@ -15,9 +16,9 @@ def classify(files:list[str], *, old_html:str|None=None, new_html:str|None=None)
     if not files or any(not isinstance(f,str) or '..' in PurePosixPath(f).parts for f in files):
         return 'human_required'
     # Evidence reports do not change the app's financial model or deployed files.
-    if all(DOC_REVIEW.fullmatch(f) or DOC_COST.fullmatch(f) for f in files):
+    if all(DOC_REVIEW.fullmatch(f) or DOC_COST.fullmatch(f) or DOC_EVIDENCE.fullmatch(f) for f in files):
         return 'evidence_only'
-    if 'index.html' in files and all(f=='index.html' or DOC_REVIEW.fullmatch(f) or DOC_COST.fullmatch(f) for f in files) and old_html is not None and new_html is not None:
+    if 'index.html' in files and all(f=='index.html' or DOC_REVIEW.fullmatch(f) or DOC_COST.fullmatch(f) or DOC_EVIDENCE.fullmatch(f) for f in files) and old_html is not None and new_html is not None:
         from guard import only_css_changed
         if only_css_changed(old_html,new_html):
             return 'cosmetic_only'

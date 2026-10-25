@@ -5,20 +5,178 @@ name: LIFE AI development team
   workflow_dispatch:
     inputs:
       issue_number:
-        description: '既存のGitHub Issue番号（半角数字）'
+        description: '既存の所有者のGitHub Issue番号'
         required: true
         type: string
-
 concurrency:
   group: life-agent-${{ github.event.issue.number || inputs.issue_number || github.run_id }}
   cancel-in-progress: false
-
+permissions:
+  contents: read
 jobs:
-  # Owner requests only. Never spend a free API quota on public strangers' issues.
-  generate:
+  request:
     if: >-
-      (github.event_name == 'issues' && github.event.issue.user.login == github.repository_owner) ||
-      (github.event_name == 'workflow_dispatch' && github.actor == github.repository_owner)
+      github.ref == 'refs/heads/main' &&
+      ((github.event_name == 'issues' && github.event.issue.user.login == github.repository_owner) ||
+      (github.event_name == 'workflow_dispatch' && github.actor == github.repository_owner))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    outputs:
+      run: ${{ steps.request.outputs.run }}
+      issue: ${{ steps.request.outputs.issue }}
+      recover: ${{ steps.request.outputs.recover }}
+    steps:
+      - id: request
+        name: Validate ownership and avoid duplicate work and PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: |
+          set -euo pipefail
+          case "$ISSUE_NUMBER" in ''|*[!0-9]*) exit 1;; esac
+          author=$(gh api "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER" --jq '.user.login')
+          test "$author" = "$GITHUB_REPOSITORY_OWNER"
+          state=$(gh api "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER" --jq '.state')
+          test "$state" = open
+          echo "issue=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+          existing=$(gh pr list --repo "$GITHUB_REPOSITORY" --state all --head "ai/issue-$ISSUE_NUMBER" --json number --jq 'length')
+          if [ "$existing" -gt 0 ]; then
+            echo 'A proposal already exists for this issue; reuse it. No model call or duplicate PR.'
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # If a prior job pushed but failed before creating its PR, retain the
+          # recoverable branch and stop; never overwrite possible human edits.
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/ai/issue-$ISSUE_NUMBER" >/dev/null 2>&1; then
+            echo 'Recover the existing branch by opening its missing draft PR; no overwrite.'
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+            echo 'recover=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo 'run=true' >> "$GITHUB_OUTPUT"
+  recover-proposal:
+    needs: [request]
+    if: needs.request.outputs.recover == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+      issues: write
+    steps:
+      # Checkout only the trusted workflow's main SHA. Branch contents are read
+      # through git show and JSON parsing; nothing from the branch is executed.
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify orphan proposal provenance and immutable evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ needs.request.outputs.issue }}
+        run: |
+          set -euo pipefail
+          case "$ISSUE_NUMBER" in ''|*[!0-9]*) exit 1;; esac
+          git fetch origin "refs/heads/ai/issue-$ISSUE_NUMBER:refs/remotes/origin/lifeplan-recovery"
+          git fetch origin main
+          python - <<'PY'
+          import hashlib,json,os,re,subprocess,tempfile
+          from pathlib import Path
+          def git(*args): return subprocess.check_output(['git',*args],text=True).strip()
+          def api(path): return json.loads(subprocess.check_output(['gh','api',path],text=True))
+          issue=os.environ['ISSUE_NUMBER']
+          repo=os.environ['GITHUB_REPOSITORY']
+          ref='refs/remotes/origin/lifeplan-recovery'
+          head=git('rev-parse','--verify',ref+'^{commit}')
+          parents=git('show','-s','--format=%P',head).split()
+          if len(parents)!=1: raise SystemExit('Recovery requires one bot proposal commit')
+          base=parents[0]
+          subprocess.run(['git','merge-base','--is-ancestor',base,'origin/main'],check=True)
+          author=git('show','-s','--format=%an%n%ae%n%s',head).splitlines()
+          if author != ['lifeplan-ai[bot]','41898282+github-actions[bot]@users.noreply.github.com',
+                        'AI reviewed change for issue #'+issue]:
+              raise SystemExit('Unexpected proposal commit identity; retain branch for review')
+          files=set(git('diff','--name-only',base,head).splitlines())
+          matches=[re.fullmatch(r'reviews/orchestration-issue-'+issue+r'-run-([0-9]+)\.json',f) for f in files]
+          runs=[m.group(1) for m in matches if m]
+          if len(runs)!=1: raise SystemExit('Missing unambiguous original run evidence')
+          run=runs[0]
+          reports={f'reviews/issue-{issue}-run-{run}.md',
+                   f'reviews/evidence-issue-{issue}-run-{run}.json',
+                   f'reviews/orchestration-issue-{issue}-run-{run}.json',
+                   f'costs/issue-{issue}-run-{run}.json',
+                   f'costs/coverage-issue-{issue}-run-{run}.json'}
+          candidate={'index.html','engine.js','automation/cost_research.py','automation/test_cost_research.py'}
+          if not reports <= files or not files <= reports | candidate:
+              raise SystemExit('Unexpected branch changes; retain branch for review')
+          def document(path): return json.loads(git('show',head+':'+path))
+          evidence=document(f'reviews/evidence-issue-{issue}-run-{run}.json')
+          proposal=document(f'reviews/orchestration-issue-{issue}-run-{run}.json')
+          if evidence.get('status')!='passed' or proposal.get('publication_authorized') is not False:
+              raise SystemExit('Recovery requires passing regression evidence and no publication authorization')
+          for path in candidate:
+              body=subprocess.check_output(['git','show',head+':'+path])
+              actual=hashlib.sha256(body).hexdigest()
+              if evidence.get('source_sha256',{}).get(path)!=actual or proposal.get('candidate_sha256',{}).get(path)!=actual:
+                  raise SystemExit('Recovered candidate differs from tested/reviewed bytes: '+path)
+          original=api(f'repos/{repo}/actions/runs/{run}')
+          if original.get('head_sha')!=base or original.get('path','').split('@')[0]!='.github/workflows/ai-dev.yml':
+              raise SystemExit('Original run does not belong to this trusted base and workflow')
+          if original.get('actor',{}).get('login')!=os.environ['GITHUB_REPOSITORY_OWNER']:
+              raise SystemExit('Original run was not started by the repository owner')
+          jobs=api(f'repos/{repo}/actions/runs/{run}/jobs?per_page=100')['jobs']
+          if not any(job.get('name')=='verify / test' and job.get('conclusion')=='success' for job in jobs):
+              raise SystemExit('Original isolated verification success could not be confirmed')
+          # A bot author string and a passing run ID are insufficient proof:
+          # compare the retained original artifacts rather than trusting reports
+          # that a later branch writer could fabricate. Expiry fails closed.
+          with tempfile.TemporaryDirectory(prefix='lifeplan-recovery-') as directory:
+              quality=Path(directory,'quality')
+              original_proposal=Path(directory,'proposal')
+              for name,destination in [('candidate-quality-evidence',quality),('proposed-app',original_proposal)]:
+                  subprocess.run(['gh','run','download',run,'--repo',repo,'--name',name,
+                                  '--dir',str(destination)],check=True)
+              if json.loads((quality/'RUN_EVIDENCE.json').read_text()) != evidence:
+                  raise SystemExit('Branch evidence differs from the original verified artifact')
+              if json.loads((original_proposal/'ORCHESTRATION.json').read_text()) != proposal:
+                  raise SystemExit('Branch review differs from the original proposed artifact')
+              for path in candidate:
+                  name=Path(path).name
+                  actual=hashlib.sha256((original_proposal/name).read_bytes()).hexdigest()
+                  if actual != evidence['source_sha256'][path]:
+                      raise SystemExit('Original candidate artifact hash differs: '+path)
+          print('Verified orphan proposal',head,'from run',run,'; no branch code executed')
+          PY
+      - name: Open the missing draft PR without changing its branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ needs.request.outputs.issue }}
+        run: |
+          set -euo pipefail
+          existing=$(gh pr list --repo "$GITHUB_REPOSITORY" --state all --head "ai/issue-$ISSUE_NUMBER" --json number --jq 'length')
+          if [ "$existing" -gt 0 ]; then echo 'Proposal already exists; nothing to recover.'; exit 0; fi
+          # Re-check the remote head to avoid attaching recovery evidence to a
+          # branch changed concurrently by a human. Never update that branch.
+          expected=$(git rev-parse refs/remotes/origin/lifeplan-recovery)
+          actual=$(git ls-remote --heads origin "ai/issue-$ISSUE_NUMBER" | cut -f1)
+          test "$actual" = "$expected" || { echo 'Branch changed; retain it for review'; exit 1; }
+          cat > /tmp/lifeplan_recovery_body.md <<'BODY'
+          **草案・作成処理の回復**。ブランチ作成後にPR作成が失敗した提案を再利用しました。ブランチとコードは変更・実行していません。
+
+          元の所有者起動run、mainに属する親commit、bot提案commit、候補ハッシュ、元runの独立検証成功を確認しました。証拠は reviews/ にあります。今回の回復ではテストを再実行していません。
+
+          要件別受入・独立再計算・制度出典の未検証事項が残るため草案です。ready化・マージ・公開には別途品質ゲートと必要な所有者承認が必要です。
+          BODY
+          gh pr create --repo "$GITHUB_REPOSITORY" --draft --base main --head "ai/issue-$ISSUE_NUMBER" \
+            --title "AI提案: Issue #$ISSUE_NUMBER（作成回復）" --body-file /tmp/lifeplan_recovery_body.md
+  generate:
+    needs: [request]
+    if: needs.request.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -31,18 +189,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install free PDF parser for university tuition brochures
-        run: python -m pip install 'pypdf>=5,<7'
-      - name: Read requirement from the owner's issue
+      - run: python -m pip install 'pypdf==6.10.0'
+      - name: Read the validated owner's request as data
         env:
           GH_TOKEN: ${{ github.token }}
-          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+          ISSUE_NUMBER: ${{ needs.request.outputs.issue }}
         run: |
-          case "$ISSUE_NUMBER" in ''|*[!0-9]*) echo 'Invalid issue number'; exit 1;; esac
-          author=$(gh api "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER" --jq '.user.login')
-          test "$author" = "$GITHUB_REPOSITORY_OWNER" || { echo 'Only repo owner issues can run the agent'; exit 1; }
+          set -euo pipefail
           gh api "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER" --jq '.body // ""' > /tmp/lifeplan_issue.txt
-      - name: Generate requirements, six reviewers, comprehensive actual cost research and source patch
+      - name: Generate bounded proposal, requirements and adversarial reviews
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-3.1-flash-lite
@@ -55,54 +210,18 @@ jobs:
         with:
           name: proposed-app
           path: agent-output/
+          if-no-files-found: error
           retention-days: 7
-
   verify:
     needs: [generate]
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
+    uses: ./.github/workflows/quality-checks.yml
+    with:
+      candidate: true
+      evidence_name: candidate-quality-evidence
     permissions:
       contents: read
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/download-artifact@v4
-        with:
-          name: proposed-app
-          path: agent-output
-      - name: Install patch in isolated test runner (no AI key, no write token)
-        run: |
-          cp agent-output/index.html index.html
-          cp agent-output/engine.js engine.js
-          cp agent-output/cost_research.py automation/cost_research.py
-          cp agent-output/test_cost_research.py automation/test_cost_research.py
-          python -m py_compile automation/cost_research.py automation/test_cost_research.py
-          node --check engine.js
-          python -m unittest discover -s automation -p test_guard.py -q
-          python -m unittest discover -s automation -p test_cost_research.py -q
-          python -m unittest discover -s automation -p test_education_cost_audit.py -q
-          python -m unittest discover -s automation -p test_education_cost_budget.py -q
-          python -m unittest discover -s automation -p test_assurance_budget.py -q
-          python -m unittest discover -s automation -p test_release_policy.py -q
-          python -m unittest discover -s automation -p test_source_change_report.py -q
-          python -m unittest discover -s automation -p test_registered_prices.py -q
-          node --test automation/test_smoke.cjs
-          if test -f tests/engine.test.cjs; then node --test tests/engine.test.cjs; fi
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install Playwright on ephemeral runner
-        run: |
-          python -m pip install 'playwright>=1.55,<2' 'pytest>=8,<10'
-          python -m playwright install --with-deps chromium
-      - name: Fill out forms and compare results in real Chromium
-        run: |
-          python automation/test_browser.py
-          if test -f tests/test_browser.py; then python -m pytest -q tests/test_browser.py; fi
-
   propose:
-    needs: [generate, verify]
+    needs: [request, generate, verify]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -112,101 +231,144 @@ jobs:
       actions: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
           name: proposed-app
           path: agent-output
-      - name: Recheck source has not changed; create proposed branch
+      - uses: actions/download-artifact@v4
+        with:
+          name: candidate-quality-evidence
+          path: quality-evidence
+      - name: Validate immutable base and evidence without executing candidate code
         env:
-          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+          ISSUE_NUMBER: ${{ needs.request.outputs.issue }}
         run: |
+          set -euo pipefail
           python - <<'PY'
           import hashlib,json,pathlib
           hashes=json.loads(pathlib.Path('agent-output/base-hashes.json').read_text())
+          allowed={'index.html','engine.js','automation/cost_research.py','automation/test_cost_research.py'}
+          if set(hashes) != allowed: raise SystemExit('Unexpected base manifest')
           for path,expected in hashes.items():
-              current=hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
-              if current != expected:
-                  raise SystemExit(f'{path} changed during review; re-run AI on newest revision')
+              if hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()!=expected:
+                  raise SystemExit('Base changed during review: '+path)
+          # Candidate files remain data in this write-authorized job. The exact
+          # artifact was tested in verify without write tokens or an AI key.
+          for name in ('ORCHESTRATION.json','AI_REVIEW.md','COST_EVIDENCE.json','COST_COVERAGE.json'):
+              if not pathlib.Path('agent-output',name).is_file(): raise SystemExit('Missing report: '+name)
+          evidence=json.loads(pathlib.Path('quality-evidence/RUN_EVIDENCE.json').read_text())
+          proposal=json.loads(pathlib.Path('agent-output/ORCHESTRATION.json').read_text())
+          if evidence.get('status') != 'passed': raise SystemExit('Objective tests did not pass')
+          candidate={'index.html':'index.html','engine.js':'engine.js',
+                     'automation/cost_research.py':'cost_research.py',
+                     'automation/test_cost_research.py':'test_cost_research.py'}
+          for source,artifact in candidate.items():
+              actual=hashlib.sha256(pathlib.Path('agent-output',artifact).read_bytes()).hexdigest()
+              if evidence.get('source_sha256',{}).get(source)!=actual:
+                  raise SystemExit('Candidate differs from tested bytes: '+source)
+              if proposal.get('candidate_sha256',{}).get(source)!=actual:
+                  raise SystemExit('Candidate differs from reviewed bytes: '+source)
           PY
+          git fetch origin main
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || { echo 'Main advanced; retry on newest revision'; exit 1; }
+          branch="ai/issue-$ISSUE_NUMBER"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo 'Proposal branch already exists; refusing overwrite'; exit 1
+          fi
+          git checkout -b "$branch"
           mkdir -p reviews costs
           cp agent-output/index.html index.html
           cp agent-output/engine.js engine.js
           cp agent-output/cost_research.py automation/cost_research.py
           cp agent-output/test_cost_research.py automation/test_cost_research.py
-          cp agent-output/AI_REVIEW.md "reviews/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.md"
-          cp agent-output/COST_EVIDENCE.json "costs/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json"
-          cp agent-output/COST_COVERAGE.json "costs/coverage-issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json"
+          cp agent-output/AI_REVIEW.md "reviews/issue-$ISSUE_NUMBER-run-$GITHUB_RUN_ID.md"
+          cp agent-output/COST_EVIDENCE.json "costs/issue-$ISSUE_NUMBER-run-$GITHUB_RUN_ID.json"
+          cp agent-output/COST_COVERAGE.json "costs/coverage-issue-$ISSUE_NUMBER-run-$GITHUB_RUN_ID.json"
+          # Keep final test evidence alongside proposal reports, outside public assets.
+          cp quality-evidence/RUN_EVIDENCE.json "reviews/evidence-issue-$ISSUE_NUMBER-run-$GITHUB_RUN_ID.json"
+          cp agent-output/ORCHESTRATION.json "reviews/orchestration-issue-$ISSUE_NUMBER-run-$GITHUB_RUN_ID.json"
           git config user.name 'lifeplan-ai[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          branch="ai/issue-${ISSUE_NUMBER}-${GITHUB_RUN_ID}"
-          git checkout -b "$branch"
-          git add index.html engine.js automation/cost_research.py automation/test_cost_research.py "reviews/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.md" "costs/issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json" "costs/coverage-issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}.json"
-          git commit -m "AI reviewed change for issue #${ISSUE_NUMBER}"
+          git add index.html engine.js automation/cost_research.py automation/test_cost_research.py reviews costs
+          git commit -m "AI reviewed change for issue #$ISSUE_NUMBER"
+          # release_policy and its imported guard were not among candidate files.
+          python automation/release_policy.py > /tmp/lifeplan_release_scope
+          echo "RELEASE_SCOPE=$(cat /tmp/lifeplan_release_scope)" >> "$GITHUB_ENV"
           git push --set-upstream origin "$branch"
           echo "AI_BRANCH=$branch" >> "$GITHUB_ENV"
-      - name: Open reviewed pull request
+      - name: Open one evidence-backed PR without claiming unrun checks
         env:
           GH_TOKEN: ${{ secrets.LIFEPLAN_PR_TOKEN || github.token }}
-          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+          ISSUE_NUMBER: ${{ needs.request.outputs.issue }}
         run: |
-          pr=$(gh pr create --base main --head "$AI_BRANCH" \
-            --title "AI提案: Issue #${ISSUE_NUMBER}" \
-            --body "要望 #${ISSUE_NUMBER} を6分野のAIと実費調査AIがレビューし、独立品質ゲートと自動操作テストを通過しました。変更点と未検証項目は reviews/ 内の今回のレポートに記載しています。計算や制度に関する変更は必ず人が確認してください。")
+          set -euo pipefail
+          cat > /tmp/lifeplan_pr_body.md <<'BODY'
+          **草案・要件別受入検証待ち**。回帰テストの成功は今回の変更要求を満たす証拠ではありません。受入テスト対応と必要な独立再計算・一次資料を確認するまでready化・自動マージは禁止です。
+
+          所有者の変更要求から生成した提案です。要件・反証レビュー・候補ハッシュは reviews/orchestration-*、実行した回帰・ブラウザ検証は reviews/evidence-* にあります。
+
+          生成コードはAPIキー・書込トークンを渡さない別ジョブで検証しました。制度診断、公式資料の未確認事項、独立PRチェックと差分を確認してください。AIレビューの一致は制度の正しさの証明ではありません。
+
+          計算・制度・金額データ・セキュリティ・workflow権限の変更は所有者の承認が必要です。Critical/Highが残る場合は公開不可です。公開後の実機Safari検証は別途必要です。
+          BODY
+          pr=$(gh pr create --draft --base main --head "$AI_BRANCH" --title "AI提案: Issue #$ISSUE_NUMBER" --body-file /tmp/lifeplan_pr_body.md)
           echo "PR_URL=$pr" >> "$GITHUB_ENV"
-          gh issue comment "$ISSUE_NUMBER" --body "AIから修正提案を作成しました: $pr 。提案コードの内部テスト実行済み。別の pr-quality-gate チェック合格と差分確認の後に Merge pull request を押してください。"
-      - name: Detect safe-only changes using actual git diff
-        run: |
-          python automation/release_policy.py > /tmp/lifeplan_release_scope
-          cat /tmp/lifeplan_release_scope
-          echo "RELEASE_SCOPE=$(cat /tmp/lifeplan_release_scope)" >> "$GITHUB_ENV"
-      - name: Auto-merge documentary or CSS-only changes after protected checks
-        # Optional fine-grained token enables non-pending PR workflow triggers.
-        # GitHub enforces the required PR check before an auto-merge takes place.
-        if: ${{ env.RELEASE_SCOPE == 'evidence_only' || env.RELEASE_SCOPE == 'cosmetic_only' }}
+          gh issue comment "$ISSUE_NUMBER" --body "修正提案: $pr 。証拠はPR内にあります。独立チェックと未解決事項を確認してください。"
+      - name: Dispatch independent checks against proposal SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pr-quality-gate.yml --ref "$AI_BRANCH"
+      - name: Enable low-risk auto-merge only after verifying actual protection
+        if: env.RELEASE_SCOPE == 'evidence_only' || env.RELEASE_SCOPE == 'cosmetic_only'
         env:
           GH_TOKEN: ${{ secrets.LIFEPLAN_PR_TOKEN || github.token }}
           HAS_PR_TOKEN: ${{ secrets.LIFEPLAN_PR_TOKEN != '' }}
         run: |
-          if [ "$HAS_PR_TOKEN" != 'true' ]; then
-            echo 'No dedicated token. PR stays open for manual checks and merge.'
+          set -euo pipefail
+          if [ "$HAS_PR_TOKEN" != true ]; then echo 'No dedicated token; retain PR for review.'; exit 0; fi
+          # A candidate is draft until its requirement-specific acceptance,
+          # independent recalculation and source evidence have been audited.
+          # Regression green alone cannot promote it or authorize publication.
+          if ! python - <<'PY'
+          import json
+          p=json.load(open('agent-output/ORCHESTRATION.json'))
+          if p.get('final_verdict') != 'verified' or p.get('acceptance_coverage') != 'passed' or p.get('publication_authorized') is not True:
+              raise SystemExit('Requirement-specific evidence is pending; keep draft PR and disable auto-merge')
+          PY
+          then
             exit 0
           fi
-          echo "Auto-merge eligible scope: $RELEASE_SCOPE. Branch protection must remain enabled."
-          gh pr merge "$PR_URL" --auto --squash || echo 'Auto-merge unavailable; PR remains open and requires review.'
-      # Pull requests created with GITHUB_TOKEN can have PR checks pending approval.
-      # Explicit workflow_dispatch always starts a new independent run against
-      # the proposed branch's head SHA; require pr-quality-gate before merging.
-      - name: Dispatch independent PR quality checks (fallback without dedicated token)
-        env:
-          HAS_PR_TOKEN: ${{ secrets.LIFEPLAN_PR_TOKEN != '' }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if [ "$HAS_PR_TOKEN" = 'true' ]; then
-            echo 'Dedicated token used: regular PR checks will run automatically.'
-            exit 0
+          # Fail closed when protection cannot be read, including rulesets-only
+          # repositories: no setting is changed and no permission is expanded.
+          if ! gh api "repos/$GITHUB_REPOSITORY/branches/main/protection" > /tmp/main-protection.json; then
+            echo 'Protection could not be confirmed; retain PR for review.'; exit 0
           fi
-          gh workflow run pr-quality-gate.yml --ref "$AI_BRANCH"
-          echo "Independent check started for $AI_BRANCH."
-          echo "Do NOT merge the PR until pr-quality-gate succeeds."
-
-      # Deliberately no auto-merge in this safety-first release. This avoids
-      # racing the required independent checks, including for CSS-only changes.
-      - name: Keep proposed change pending check and human approval
-        run: |
-          echo 'PR is open. Independent quality checks must pass first.'
-          echo 'Important financial changes always require human approval.'
-
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/main-protection.json'))
+          contexts=p.get('required_status_checks',{}).get('contexts',[])
+          contexts += [c['context'] for c in p.get('required_status_checks',{}).get('checks',[])]
+          if 'lifeplan/independent-quality' not in contexts: raise SystemExit('Required exact-SHA independent check is not protected')
+          if not p.get('required_status_checks',{}).get('strict'): raise SystemExit('Up-to-date required checks are not enforced')
+          if not p.get('enforce_admins',{}).get('enabled'): raise SystemExit('Admin protection is not enforced')
+          if not p.get('required_pull_request_reviews',{}).get('required_approving_review_count',0): raise SystemExit('Human approval protection is not configured')
+          PY
+          gh pr ready "$PR_URL"
+          gh pr merge "$PR_URL" --auto --squash
   alert:
-    if: failure() && (github.event_name == 'workflow_dispatch' || github.event.issue.user.login == github.repository_owner)
-    needs: [generate, verify, propose]
+    if: ${{ failure() && needs.request.outputs.issue != '' }}
+    needs: [request, generate, verify, propose, recover-proposal]
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     permissions:
       issues: write
     steps:
-      - name: Comment failure with log link (do not expose API credentials)
+      - name: Report bounded stop without credentials or request contents
         env:
           GH_TOKEN: ${{ github.token }}
-          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+          ISSUE_NUMBER: ${{ needs.request.outputs.issue }}
         run: |
           case "$ISSUE_NUMBER" in ''|*[!0-9]*) exit 0;; esac
-          gh issue comment "$ISSUE_NUMBER" --body "AI作業は安全側に停止しました。API無料枠・編集対象・独立レビュー・テストのどこかで失敗しています。ログ: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID 。本番アプリは変更していません。" || true
+          gh issue comment "$ISSUE_NUMBER" --body "AI作業は停止しました。本番公開はしていません。無料枠、権限、未検証事項、テスト結果をログで確認してください: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

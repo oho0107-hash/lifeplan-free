@@ -4,95 +4,20 @@ name: LIFE independent PR quality
     branches: [main]
     types: [opened, synchronize, reopened]
   workflow_dispatch:
-
-# Do not give PR code credentials, write permissions or secrets.
 permissions:
   contents: read
-
 concurrency:
   group: pr-quality-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   pr-quality-gate:
     name: pr-quality-gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - name: Checkout proposed app code (read only)
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Prepare Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Prepare Node 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Confirm required source and test files
-        shell: bash
-        run: |
-          set -euo pipefail
-          for f in index.html engine.js automation/test_smoke.cjs \
-                   automation/test_guard.py automation/test_cost_research.py \
-                   automation/test_education_cost_audit.py \
-                   automation/test_education_cost_budget.py \
-                   automation/test_browser.py; do
-            test -s "$f" || { echo "Missing required file: $f"; exit 1; }
-          done
-          node --check engine.js
-          test -s education-reserve.html || { echo 'Missing education reserve page'; exit 1; }
-          python - <<'PYCODE'
-          import pathlib,re,subprocess,tempfile
-          page=pathlib.Path('education-reserve.html').read_text(encoding='utf-8')
-          script=re.search(r'<script>([\s\S]*?)</script>',page)
-          if not script:raise SystemExit('Missing inline reserve script')
-          with tempfile.NamedTemporaryFile(mode='w',suffix='.js',encoding='utf-8') as f:
-              f.write(script.group(1));f.flush()
-              subprocess.run(['node','--check',f.name],check=True)
-          PYCODE
-
-      - name: Independent rule and finance regression tests
-        shell: bash
-        run: |
-          set -euo pipefail
-          for suite in test_guard.py test_cost_research.py \
-                       test_education_cost_audit.py test_education_cost_budget.py \
-                       test_assurance_budget.py test_release_policy.py test_source_change_report.py \
-                       test_registered_prices.py; do
-            python -m unittest discover -s automation -p "$suite" -q
-          done
-          node --test automation/test_smoke.cjs
-          if test -f tests/engine.test.cjs; then
-            node --test tests/engine.test.cjs
-          fi
-
-      - name: Install open-source browser testing tools
-        run: |
-          python -m pip install 'playwright>=1.55,<2' 'pytest>=8,<10'
-          python -m playwright install --with-deps chromium
-
-      - name: Enter fake family data into browser and verify actual results
-        shell: bash
-        run: |
-          set -euo pipefail
-          python automation/test_browser.py
-          if test -f tests/test_browser.py; then
-            python -m pytest -q tests/test_browser.py
-          fi
-
-
-  # workflow_dispatch checks are not automatically attached to Pull Requests.
-  # After the isolated, read-only tests finish, post a *commit status* on the
-  # exact tested SHA. This is what branch protection will require.
-  # This job never checks out or executes code from the proposed branch.
+    uses: ./.github/workflows/quality-checks.yml
+    with:
+      evidence_name: pr-quality-evidence
+    permissions:
+      contents: read
   publish-commit-status:
-    name: publish-commit-status
     needs: [pr-quality-gate]
     if: ${{ always() && github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
@@ -100,23 +25,16 @@ jobs:
     permissions:
       statuses: write
     steps:
-      - name: Record independent quality verdict against tested commit
-        shell: bash
+      # No checkout and no execution of PR code in the write-authorized job.
+      - name: Record verdict on the exact tested SHA
         env:
           GH_TOKEN: ${{ github.token }}
           TEST_RESULT: ${{ needs.pr-quality-gate.result }}
         run: |
           set -euo pipefail
-          if [[ "$TEST_RESULT" == 'success' ]]; then
-            verdict='success'
-            message='Independent calculator and browser tests passed'
-          else
-            verdict='failure'
-            message='Independent calculator or browser tests failed'
-          fi
+          verdict=failure
+          if [ "$TEST_RESULT" = success ]; then verdict=success; fi
           gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
-            -f state="$verdict" \
-            -f context='lifeplan/independent-quality' \
-            -f description="$message" \
+            -f state="$verdict" -f context='lifeplan/independent-quality' \
+            -f description='Isolated regression and mobile browser check verdict' \
             -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          echo "Posted commit status: lifeplan/independent-quality=$verdict for $GITHUB_SHA"

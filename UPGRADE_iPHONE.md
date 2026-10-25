@@ -52,3 +52,9 @@
 - `.github/workflows`、`automation`、学校の金額定義、`engine.js`、計算式の変更は人の承認が必要。
 - 人間が承認する場合も `pr-quality-gate` を必須とし、チェックを無効化しない。
 - `index.html` 以外に配信されるのは `education-reserve.html` と `costs/official_sources.json` のみ。GitHub Pagesに秘密情報は配信しない。
+
+## Codexから継続開発する場合
+
+この構築以降、通常の依頼ではZIPの手動差し替えは不要です。Codexで対象リポジトリを開き、自然言語で要望を送信します。`AGENTS.md`の手順に従い要件・専門検証・反証・実装・テスト・PRまで進みます。制度や計算・金額・権限の変更は、証拠付きPRの承認後に公開します。未解決の重大な計算差異がある間は新規公開が停止します。
+
+環境の構成案の公開と、アプリのGitHub Pages公開は別操作です。APIキーや家庭の実データはIssue・PR・チャットに貼らないでください。

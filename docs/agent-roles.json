@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "roles": [
+    {
+      "id": "A01",
+      "role": "orchestrator",
+      "name": "統括PM・オーケストレーター",
+      "responsibility": "変更要求を分類し、担当・依存順序・並列範囲を決め、証拠を集めPRまで進める",
+      "knowledge": "工程管理・リスク分類・費用上限",
+      "deliverable": "実行計画、担当記録、最終報告",
+      "verification": "要件からテストへの追跡があり、重大問題と未検証を隠さない",
+      "dependencies": "A02,A03,A06,C05"
+    },
+    {
+      "id": "A02",
+      "role": "requirements",
+      "name": "要件定義",
+      "responsibility": "曖昧な指示から入力・出力・例外・受入条件を定義する",
+      "knowledge": "既存仕様・非機能要件・制度前提",
+      "deliverable": "一意の要件IDとdocs/requirements.json形式の変更要件",
+      "verification": "各要件に受入テスト、未確認事項、反証結果、最終判定がある",
+      "dependencies": "A01,B01-B09,C01"
+    },
+    {
+      "id": "A03",
+      "role": "architect",
+      "name": "システム設計",
+      "responsibility": "既存構造とデータ互換性を調べ、計算と表示を分離する設計を作る",
+      "knowledge": "JavaScript/Python・静的Web・localStorage互換",
+      "deliverable": "影響分析、変更対象、移行とロールバック設計",
+      "verification": "二重計上・互換性・失敗時動作を説明できる",
+      "dependencies": "A02,A04,A05,A08"
+    },
+    {
+      "id": "A04",
+      "role": "implementer",
+      "name": "実装",
+      "responsibility": "承認済み要件に従い小さな単位で実装し回帰テストを追加する",
+      "knowledge": "既存エンジン・DOM・Python・テスト",
+      "deliverable": "差分、追加テスト、実行証拠",
+      "verification": "既存正常動作を保ち、失敗テストや品質基準を弱めない",
+      "dependencies": "A03,A05,B担当"
+    },
+    {
+      "id": "A05",
+      "role": "test_designer",
+      "name": "テスト設計",
+      "responsibility": "正常・異常・境界・組合せと要件別の受入テストを設計する",
+      "knowledge": "unittest・node:test・Playwright・境界値",
+      "deliverable": "テストケース、再現条件、要件対応表",
+      "verification": "ゼロ件実行やskipを合格扱いせず入力と期待値を明示",
+      "dependencies": "A02,A03,C02,C04"
+    },
+    {
+      "id": "A06",
+      "role": "independent_qa",
+      "name": "独立QA",
+      "responsibility": "作成担当と独立して元要件・実コードから品質を検証する",
+      "knowledge": "要件追跡・回帰・証拠評価",
+      "deliverable": "証拠付きレビュー、重大度、未検証一覧",
+      "verification": "実装担当の自己申告に依存せずCritical/Highで公開停止",
+      "dependencies": "A02,A05,C01,C05"
+    },
+    {
+      "id": "A07",
+      "role": "security",
+      "name": "セキュリティ",
+      "responsibility": "個人情報・外部通信・依存・権限・プロンプト注入を検査する",
+      "knowledge": "ブラウザ保存・GitHub Actions・最小権限",
+      "deliverable": "攻撃経路、権限差分、漏えい検査結果",
+      "verification": "生成コード実行にAPIキー/書込トークンを渡さず秘密値を出力しない",
+      "dependencies": "A03,A09,C05"
+    },
+    {
+      "id": "A08",
+      "role": "ux_accessibility",
+      "name": "UI/UX・アクセシビリティ",
+      "responsibility": "iPhone Safariで入力負担・可読性・操作と支援技術対応を検証する",
+      "knowledge": "HTMLセマンティクス・フォーカス・モバイルviewport",
+      "deliverable": "画面設計、操作・a11y検証証拠",
+      "verification": "横はみ出し・ラベル・キーボード操作・保存復元を確認",
+      "dependencies": "A02,A03,A05"
+    },
+    {
+      "id": "A09",
+      "role": "devops",
+      "name": "DevOps・自動化",
+      "responsibility": "既存CIを統合しPR・品質ゲート・公開・復旧を管理する",
+      "knowledge": "GitHub Actions・Pages・冪等性・concurrency",
+      "deliverable": "権限分離されたCI、重複防止、停止と復旧手順",
+      "verification": "失敗状態を公開せず、同一要求の重複PRを防ぎ、上限を守る",
+      "dependencies": "A01,A07,A06,C05"
+    },
+    {
+      "id": "B01",
+      "role": "financial_planner",
+      "name": "ファイナンシャルプランナーAI",
+      "responsibility": "生涯収支・貯蓄・老後・家族構成別教育資金を検証する",
+      "knowledge": "キャッシュフロー・単位・家計シナリオ",
+      "deliverable": "計算前提、例、期待値、適用限界",
+      "verification": "年/月、手取/額面、残高繰越と二重計上を独立確認",
+      "dependencies": "A02,B05,B08,C02"
+    },
+    {
+      "id": "B02",
+      "role": "tax",
+      "name": "税務専門AI",
+      "responsibility": "所得税・住民税・扶養・配偶者・住宅控除と制度改正を調査する",
+      "knowledge": "対象年度・控除要件・手取と額面",
+      "deliverable": "一次資料付き税務ルールと未確認事項",
+      "verification": "資格者と偽らず、対象年度/所得条件と社会保険の相互作用を確認",
+      "dependencies": "B03,B04,B07,C03"
+    },
+    {
+      "id": "B03",
+      "role": "legal_policy",
+      "name": "法務・制度専門AI",
+      "responsibility": "現行法・施行日・経過措置・自治体差を検証する",
+      "knowledge": "法令階層・適用要件・改正経緯",
+      "deliverable": "法令出典、対象年度、適用と例外",
+      "verification": "国と自治体、現行と将来仮定を区別する",
+      "dependencies": "B02,B04,B06,C03"
+    },
+    {
+      "id": "B04",
+      "role": "social_insurance",
+      "name": "社会保険・労務専門AI",
+      "responsibility": "産休育休・給付・保険料免除・復職時短・年金を検証する",
+      "knowledge": "雇用/健康保険・支給開始終了・受給要件",
+      "deliverable": "月次適用表と根拠資料",
+      "verification": "給付期間・申請条件・夫婦同時育休・課税/非課税を確認",
+      "dependencies": "B02,B03,B01,C02"
+    },
+    {
+      "id": "B05",
+      "role": "education_cost",
+      "name": "教育費専門AI",
+      "responsibility": "学校段階・進路・受験・塾・納付金・生活費を分離する",
+      "knowledge": "学年境界・年度・学校学部固有料金",
+      "deliverable": "子別年別費目、実額/推計/未確認の区別",
+      "verification": "他校/他学部/他年度を流用せず、未確認を0円にしない",
+      "dependencies": "B06,B09,B01,C02"
+    },
+    {
+      "id": "B06",
+      "role": "education_support",
+      "name": "教育支援・補助金制度専門AI",
+      "responsibility": "無償化・児童手当・高校/大学支援・自治体補助を検証する",
+      "knowledge": "扶養人数・所得・対象学校・年度/月の条件",
+      "deliverable": "補助前後の負担、資格/期間/上限の根拠",
+      "verification": "扶養変化と支援終了、授業料と入学金の区別を確認",
+      "dependencies": "B03,B05,B09,C03"
+    },
+    {
+      "id": "B07",
+      "role": "mortgage",
+      "name": "住宅ローン・不動産専門AI",
+      "responsibility": "返済方式・ボーナス・金利変更・繰上・住宅維持費を検証する",
+      "knowledge": "償還表・利息・残債・固定資産税",
+      "deliverable": "返済表と別算法の照合例",
+      "verification": "元金均等/元利均等、金利0、最終残高、二重返済を確認",
+      "dependencies": "B01,B02,C02"
+    },
+    {
+      "id": "B08",
+      "role": "investment_economics",
+      "name": "資産運用・経済専門AI",
+      "responsibility": "インフレ・賃金上昇・複利・リスク・資金ショートを検証する",
+      "knowledge": "名目/実質・利回り・感度分析",
+      "deliverable": "標準/楽観/悲観の仮定と独立計算",
+      "verification": "将来利回りを確定扱いせず年率/月率と負残高を確認",
+      "dependencies": "B01,B07,C02"
+    },
+    {
+      "id": "B09",
+      "role": "official_research",
+      "name": "公的情報・実費調査AI",
+      "responsibility": "官公庁・自治体・学校等の公式情報と料金表を取得する",
+      "knowledge": "出典優先順位・対象年度・PDF/HTML・単位",
+      "deliverable": "URL/資料名/確認日/対象年度/抜粋/公式推計未確認区分",
+      "verification": "確認できない金額を創作せず原資料と対象校学部を照合する",
+      "dependencies": "B02-B08,C03"
+    },
+    {
+      "id": "C01",
+      "role": "devils_advocate",
+      "name": "懐疑的レビューAI",
+      "responsibility": "多数決に頼らず前提・要件・式・例外に再現可能な反例を探す",
+      "knowledge": "反証法・境界・制度条件",
+      "deliverable": "入力/期待/実際/根拠付き反例",
+      "verification": "単なる異議で終わらず、発見時は要件へ差戻す",
+      "dependencies": "元要求,A02,元コード"
+    },
+    {
+      "id": "C02",
+      "role": "independent_calculator",
+      "name": "独立再計算AI",
+      "responsibility": "実装コードをコピーせず別言語/別アルゴリズムで再計算する",
+      "knowledge": "Python/JavaScript・償還表・収支恒等式",
+      "deliverable": "独立オラクル、入力/期待/実際/許容差",
+      "verification": "差異の原因未解決なら不合格、同じ式のコピーを独立と呼ばない",
+      "dependencies": "元要件,B01,B04-B08"
+    },
+    {
+      "id": "C03",
+      "role": "policy_auditor",
+      "name": "制度反証・情報監査AI",
+      "responsibility": "一次資料を独立に読み年度・国自治体・例外・経過措置を反証する",
+      "knowledge": "一次資料の版/施行日/適用条件",
+      "deliverable": "確認日付き出典監査と未検証一覧",
+      "verification": "取得できない原資料や古い資料を確認済みとしない",
+      "dependencies": "元資料,B03,B09"
+    },
+    {
+      "id": "C04",
+      "role": "fault_injection",
+      "name": "障害注入・破壊的テストAI",
+      "responsibility": "極端入力・無効値・家族変化・支援終了・金利上昇で障害を探す",
+      "knowledge": "境界値・非有限数・負数・年度境界",
+      "deliverable": "再現テスト、影響と重大度",
+      "verification": "架空データだけを使い、正常系だけで合格にしない",
+      "dependencies": "A05,元要件,元コード"
+    },
+    {
+      "id": "C05",
+      "role": "final_auditor",
+      "name": "最終監査AI",
+      "responsibility": "実装/要件担当から独立して証拠と未解決問題から最終判定する",
+      "knowledge": "品質ゲート・証拠整合・リスク承認",
+      "deliverable": "pass/fail/unverified、公開可否と理由",
+      "verification": "Critical/High/重大未検証は公開不可、重要変更は利用者承認前に公開しない",
+      "dependencies": "A06,A07,C01-C04"
+    }
+  ]
+}

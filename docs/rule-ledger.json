@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "scope": "全専門分野の監査対象。出典URL候補を列挙しただけの項目はchecked_on=nullで未確認とする。",
+  "rules": [
+    {
+      "id": "FAMILY-01",
+      "domain": "家族/学年",
+      "owner": "B05",
+      "implementation": "engine.js students/cohortYear/gradeAt/education",
+      "rule_to_verify": "生年月日から月別学年、0–4人、双子、出生/進級境界",
+      "sources": [
+        {
+          "url": "https://www.mext.go.jp/a_menu/shotou/shugaku/detail/1422233.htm",
+          "title": "文部科学省 就学事務関連資料",
+          "checked_on": null,
+          "target_year": "対象学年度ごと",
+          "status": "unverified_this_run"
+        }
+      ],
+      "classification": "estimate_or_unverified",
+      "inputs": "架空データと適用条件",
+      "expected": "一次資料/独立算法で確定後に記録。未確認は0円に置換しない。",
+      "verification": "pending_independent_audit",
+      "test_references": [
+        "automation/test_smoke.cjs",
+        "automation/test_browser.py",
+        "automation/test_independent_finance.py"
+      ],
+      "unknowns": [
+        "年次表の年齢と学年が同じ基準日とは限らない。3人家族/4人家族と子ども3人/4人を混同しない。"
+      ],
+      "publication": "blocked_for_material_unverified_policy_changes"
+    },
+    {
+      "id": "INCOME-01",
+      "domain": "収入/育休/復職",
+      "owner": "B04",
+      "implementation": "engine.js calculate",
+      "rule_to_verify": "夫婦別手取/賞与、休業期間、復職時短、所得変動を月次照合",
+      "sources": [
+        {
+          "url": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000135090_00001.html",
+          "title": "厚生労働省 育児休業等給付関連情報",
+          "checked_on": null,
+          "target_year": "給付の対象年月ごと",
+          "status": "unverified_this_run"
+        }
+      ],
+      "classification": "estimate_or_unverified",
+      "inputs": "架空データと適用条件",
+      "expected": "一次資料/独立算法で確定後に記録。未確認は0円に置換しない。",
+      "verification": "confirmed_high_defect_in_initial_audit",
+      "test_references": [
+        "automation/test_smoke.cjs",
+        "automation/test_browser.py",
+        "automation/test_independent_finance.py"
+      ],
+      "unknowns": [
+        "雇用保険の受給要件、給付率の期間、夫婦同時育休、申請条件、課税取扱いは個別確認が必要。"
+      ],
+      "publication": "blocked_for_material_unverified_policy_changes",
+      "defect_ids": [
+        "FIN-LEAVE-001"
+      ],
+      "severity": "High",
+      "evidence": "reviews/initial-audit.md; strict diagnostics exit 1"
+    },
+    {
+      "id": "TAX-01",
+      "domain": "税金/控除",
+      "owner": "B02",
+      "implementation": "engine.js calculate（手取入力が基本）",
+      "rule_to_verify": "額面と手取、所得税/住民税、扶養/配偶者/住宅控除、保険料相互作用",
+      "sources": [
+        {
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/index2.htm",
+          "title": "国税庁 タックスアンサー",
+          "checked_on": null,
+          "target_year": "所得の対象年ごと",
+          "status": "unverified_this_run"
+        }
+      ],
+      "classification": "estimate_or_unverified",
+      "inputs": "架空データと適用条件",
+      "expected": "一次資料/独立算法で確定後に記録。未確認は0円に置換しない。",
+      "verification": "pending_independent_audit",
+      "test_references": [
+        "automation/test_smoke.cjs",
+        "automation/test_browser.py",
+        "automation/test_independent_finance.py"
+      ],
+      "unknowns": [
+        "完全な税額エンジンとみなさない。住民税の自治体差と前年所得課税を別確認。"
+      ],
+      "publication": "blocked_for_material_unverified_policy_changes"
+    },
+    {
+      "id": "BENEFIT-01",
+      "domain": "児童手当",
+      "owner": "B06",
+      "implementation": "engine.js allowanceForMonth/yearlyAllowance",
+      "rule_to_verify": "出生翌月、年齢年度末、第三子算定対象の生計費負担等を確認",
+      "sources": [
+        {
+          "url": "https://www.cfa.go.jp/policies/kokoseido/jidouteate/annai",
+          "title": "こども家庭庁 児童手当制度のご案内",
+          "checked_on": null,
+          "target_year": "支給対象月ごと",
+          "status": "unverified_this_run"
+        }
+      ],
+      "classification": "estimate_or_unverified",
+      "inputs": "架空データと適用条件",
+      "expected": "一次資料/独立算法で確定後に記録。未確認は0円に置換しない。",
+      "verification": "pending_independent_audit",
+      "test_references": [
+        "automation/test_smoke.cjs",
+        "automation/test_browser.py",
+        "automation/test_independent_finance.py"
+      ],
+      "unknowns": [
+        "年齢/子人数だけでは養育/生計負担/申請などの受給資格を断定できない。"
+      ],
+      "publication": "blocked_for_material_unverified_policy_changes"
+    },
+    {
+      "id": "PENSION-01",
+      "domain": "年金/退職",
+      "owner": "B04",
+      "implementation": "engine.js yearlyPension/calculate",
+      "rule_to_verify": "受給開始年齢・年金額・退職金と給与の二重計上を確認",
+      "sources": [
+        {
+          "url": "https://www.nenkin.go.jp/service/jukyu/seido/roureinenkin/jukyu-yoken/20150401-02.html",
+          "title": "日本年金機構 老齢基礎年金の受給要件",
+          "checked_on": null,
+          "target_year": "受給対象年ごと",
+          "status": "unverified_this_run"
+        }
+      ],
+      "classification": "estimate_or_unverified",
+      "inputs": "架空データと適用条件",
+      "expected": "一次資料/独立算法で確定後に記録。未確認は0円に置換しない。",
+      "verification": "pending_independent_audit",
+      "test_references": [
+        "automation/test_smoke.cjs",
+        "automation/test_browser.py",
+        "automation/test_independent_finance.py"
+      ],
+      "unknowns": [
+        "入力年金額の税引前後、繰上/繰下や受給開始月を確定しない。"
+      ],
+      "publication": "blocked_for_material_unverified_policy_changes"
+    },
+    {
+      "id": "EDUCATION-01",
+      "domain": "教育費/実費",
+      "owner": "B05",
+      "implementation": "engine.js education; education-reserve.html; automation/assurance_budget.py",
+      "rule_to_verify": "子別年度別に授業料/入学金/受験/塾/生活/仕送り/奨学金を区別",
+      "sources": [
+        {
+          "url": "costs/official_sources.json",
+          "title": "登録済公式学校料金表と費目網羅台帳",
+          "checked_on": null,
+          "target_year": "学校/学部/入学対象年度ごと",
+          "status": "unverified_this_run"
+        }
+      ],
+      "classification": "estimate_or_unverified",
+      "inputs": "架空データと適用条件",
+      "expected": "一次資料/独立算法で確定後に記録。未確認は0円に置換しない。",
+      "verification": "pending_independent_audit",
+      "test_references": [
+        "automation/test_smoke.cjs",
+        "automation/test_browser.py",
+        "automation/test_independent_finance.py"
+      ],
+      "unknowns": [
+        "本体は概算費用モデル。安心準備額画面は未接続。全費目収集済みではない。未確認を0円にしない。"
+      ],
+      "publication": "blocked_for_material_unverified_policy_changes"
+    },
+    {
+      "id": "SUPPORT-01",
+      "domain": "教育支援/補助",
+      "owner": "B06",
+      "implementation": "engine.js education",
+      "rule_to_verify": "高校/大学支援、授業料/入学金、扶養人数の変化、対象学校/所得/期間を確認",
+      "sources": [
+        {
+          "url": "https://www.mext.go.jp/content/20250207-mxt_gakushi01_100001505_2.pdf",
+          "title": "文部科学省 多子世帯の大学等授業料等支援関連資料",
+          "checked_on": null,
+          "target_year": "2025年資料を参照候補。2026以降の適用は未確認",
+          "status": "unverified_this_run"
+        }
+      ],
+      "classification": "estimate_or_unverified",
+      "inputs": "架空データと適用条件",
+      "expected": "一次資料/独立算法で確定後に記録。未確認は0円に置換しない。",
+      "verification": "pending_independent_audit",
+      "test_references": [
+        "automation/test_smoke.cjs",
+        "automation/test_browser.py",
+        "automation/test_independent_finance.py"
+      ],
+      "unknowns": [
+        "人数と定額上限だけでは資格確定不可。国と自治体の重複、扶養減少、終了月を確認。"
+      ],
+      "publication": "blocked_for_material_unverified_policy_changes"
+    },
+    {
+      "id": "MORTGAGE-01",
+      "domain": "住宅ローン/住宅維持",
+      "owner": "B07",
+      "implementation": "engine.js annualMortgagePayment/mortgageSchedule",
+      "rule_to_verify": "元利/元金均等、ボーナス返済、変動/繰上返済、残債、固定資産税/修繕費",
+      "sources": [
+        {
+          "url": "https://www.jhf.go.jp/",
+          "title": "住宅金融支援機構および対象金融機関の公式約款",
+          "checked_on": null,
+          "target_year": "借入契約・返済年月ごと",
+          "status": "unverified_this_run"
+        }
+      ],
+      "classification": "estimate_or_unverified",
+      "inputs": "架空データと適用条件",
+      "expected": "一次資料/独立算法で確定後に記録。未確認は0円に置換しない。",
+      "verification": "confirmed_high_defect_in_initial_audit",
+      "test_references": [
+        "automation/test_smoke.cjs",
+        "automation/test_browser.py",
+        "automation/test_independent_finance.py"
+      ],
+      "unknowns": [
+        "契約差と返済方式に依存。5年/125%ルールを全商品共通としない。金融機関の約款は未指定。"
+      ],
+      "publication": "blocked_for_material_unverified_policy_changes",
+      "defect_ids": [
+        "FIN-BONUS-001"
+      ],
+      "severity": "High",
+      "evidence": "reviews/initial-audit.md; strict diagnostics exit 1"
+    },
+    {
+      "id": "ASSET-01",
+      "domain": "資産/運用/インフレ",
+      "owner": "B08",
+      "implementation": "engine.js settleAssets/calculate",
+      "rule_to_verify": "貯蓄/投資/負債と年次繰越、複利/名目実質、資金ショートを別算法で確認",
+      "sources": [
+        {
+          "url": "engine.js",
+          "title": "実装上の計算式（公的制度の根拠ではない）",
+          "checked_on": null,
+          "target_year": "シミュレーション全期間",
+          "status": "unverified_this_run"
+        }
+      ],
+      "classification": "estimate_or_unverified",
+      "inputs": "架空データと適用条件",
+      "expected": "一次資料/独立算法で確定後に記録。未確認は0円に置換しない。",
+      "verification": "confirmed_high_defect_in_initial_audit",
+      "test_references": [
+        "automation/test_smoke.cjs",
+        "automation/test_browser.py",
+        "automation/test_independent_finance.py"
+      ],
+      "unknowns": [
+        "将来利回り/物価/賃金を確定値としない。月次/年次と複利のタイミングを確認。"
+      ],
+      "publication": "blocked_for_material_unverified_policy_changes",
+      "defect_ids": [
+        "FIN-INFLATION-001"
+      ],
+      "severity": "High",
+      "evidence": "reviews/initial-audit.md; strict diagnostics exit 1"
+    },
+    {
+      "id": "ANALYSIS-01",
+      "domain": "比較/シナリオ/感度",
+      "owner": "B01",
+      "implementation": "index.html; engine.js calculate",
+      "rule_to_verify": "年/月収支、教育累計、子別、資金不足、老後、標準/楽観/悲観/感度比較",
+      "sources": [
+        {
+          "url": "index.html",
+          "title": "既存UIと実装の監査対象",
+          "checked_on": null,
+          "target_year": "シミュレーション全期間",
+          "status": "unverified_this_run"
+        }
+      ],
+      "classification": "estimate_or_unverified",
+      "inputs": "架空データと適用条件",
+      "expected": "一次資料/独立算法で確定後に記録。未確認は0円に置換しない。",
+      "verification": "pending_independent_audit",
+      "test_references": [
+        "automation/test_smoke.cjs",
+        "automation/test_browser.py",
+        "automation/test_independent_finance.py"
+      ],
+      "unknowns": [
+        "要求に含まれるすべての月次分析や感度分析の存在/妥当性は未検証。"
+      ],
+      "publication": "blocked_for_material_unverified_policy_changes"
+    }
+  ]
+}

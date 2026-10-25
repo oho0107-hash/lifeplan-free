@@ -9,6 +9,13 @@ class ReleasePolicyTests(unittest.TestCase):
         self.assertEqual(classify(['.github/workflows/ai-dev.yml']),'human_required')
     def test_financial_data_never_auto(self):
         self.assertEqual(classify(['costs/official_sources.json']),'human_required')
+    def test_run_evidence_and_orchestration_are_documentary(self):
+        self.assertEqual(classify(['reviews/evidence-issue-5-run-123.json',
+                                   'reviews/orchestration-issue-5-run-123.json']), 'evidence_only')
+    def test_unrecognized_review_json_requires_human(self):
+        self.assertEqual(classify(['reviews/policy.json']), 'human_required')
+    def test_path_traversal_never_auto(self):
+        self.assertEqual(classify(['reviews/../issue-5-run-123.md']), 'human_required')
     def test_empty_not_auto(self):
         self.assertEqual(classify([]),'human_required')
     def test_simple_css_only(self):

@@ -1,0 +1,639 @@
+{
+  "schema_version": 1,
+  "scope": "継続開発体制の初期受入契約。statusは実行単位の証拠で更新し、未実行をpassにしない。",
+  "requirements": [
+    {
+      "id": "ORG-001",
+      "name": "永続的な開発組織",
+      "purpose": "次のCodexタスクにも役割と品質基準を引き継ぐ",
+      "inputs": [
+        "自然言語要求"
+      ],
+      "outputs": [
+        "23役割設定",
+        "共通開発規則"
+      ],
+      "rules": [
+        "A/B/C全役割の責任・知識・成果物・検証・依存を登録"
+      ],
+      "conditions": [
+        "Codexがプロジェクト設定またはAGENTS.mdを読む"
+      ],
+      "exceptions": [
+        "機能制限時は代替検証と制限を報告"
+      ],
+      "sources": [
+        "docs/agent-roles.json",
+        ".codex/config.toml",
+        "AGENTS.md"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "Codex CLI 0.163.0公式schemaとの照合。新タスクでの自動読込は未実証。"
+      ],
+      "related_requirements": [
+        "ORG-002"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "ORG-001-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "23ファイルとIDの一意性を検査",
+          "method": "23ファイルとIDの一意性を検査",
+          "status": "unrun"
+        },
+        {
+          "id": "ORG-001-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "全TOMLを公式v0.163.0 schemaで検証",
+          "method": "全TOMLを公式v0.163.0 schemaで検証",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "ORG-002",
+      "name": "統括・要件追跡",
+      "purpose": "自然言語から証拠付きPRへ一貫して進める",
+      "inputs": [
+        "要求",
+        "元コード"
+      ],
+      "outputs": [
+        "要件ID",
+        "受入テスト",
+        "実行記録"
+      ],
+      "rules": [
+        "要件→専門/反証→設計→実装→独立検証→最終判定を追跡"
+      ],
+      "conditions": [
+        "すべての変更"
+      ],
+      "exceptions": [
+        "権限/一次資料不足は未実行/未検証"
+      ],
+      "sources": [
+        "AGENTS.md",
+        "docs/DEVELOPMENT.md"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "実モデル/GitHub本番経路の実証は別途必要。"
+      ],
+      "related_requirements": [
+        "ORG-001",
+        "QA-001"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "ORG-002-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "automation/test_orchestration.py",
+          "method": "automation/test_orchestration.py",
+          "status": "unrun"
+        },
+        {
+          "id": "ORG-002-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "ORCHESTRATION.json要求とテストIDを照合",
+          "method": "ORCHESTRATION.json要求とテストIDを照合",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "QA-001",
+      "name": "独立再計算・品質ゲート",
+      "purpose": "自己評価のみの合格を防ぐ",
+      "inputs": [
+        "対象SHA",
+        "要件",
+        "架空入力"
+      ],
+      "outputs": [
+        "独立期待値",
+        "実測",
+        "差異",
+        "判定"
+      ],
+      "rules": [
+        "別言語/別算法で計算し、重大未検証やCritical/Highを公開不可にする"
+      ],
+      "conditions": [
+        "重要計算と制度、すべての公開"
+      ],
+      "exceptions": [
+        "回帰テスト緑だけで制度確認済みとしない"
+      ],
+      "sources": [
+        "docs/DEVELOPMENT.md"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "制度一次資料を今回すべて再取得したものではない。"
+      ],
+      "related_requirements": [
+        "DATA-001",
+        "CI-001"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "QA-001-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "python automation/orchestration.py verify --root . --out reports/RUN_EVIDENCE.json",
+          "method": "python automation/orchestration.py verify --root . --out reports/RUN_EVIDENCE.json",
+          "status": "unrun"
+        },
+        {
+          "id": "QA-001-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "独立監査レポートのexpected/actualを比較",
+          "method": "独立監査レポートのexpected/actualを比較",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "DATA-001",
+      "name": "専門分野の根拠台帳",
+      "purpose": "対象年度・単位・適用条件を検証可能にする",
+      "inputs": [
+        "公式資料",
+        "計算前提"
+      ],
+      "outputs": [
+        "制度台帳",
+        "未確認事項"
+      ],
+      "rules": [
+        "出典URL/資料名/確認日/対象年度/公式推計未確認を分離する"
+      ],
+      "conditions": [
+        "税・保険・給付・教育・住宅・運用"
+      ],
+      "exceptions": [
+        "不明を0円、他校/学部/年度の流用、将来仮定の確定は禁止"
+      ],
+      "sources": [
+        "docs/rule-ledger.json",
+        "costs/official_sources.json"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "全制度を資格者が確認したわけではない。"
+      ],
+      "related_requirements": [
+        "QA-001"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "DATA-001-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "台帳の全分野と必須項目を確認",
+          "method": "台帳の全分野と必須項目を確認",
+          "status": "unrun"
+        },
+        {
+          "id": "DATA-001-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "未検証事項で公開許可にならないことを確認",
+          "method": "未検証事項で公開許可にならないことを確認",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "CI-001",
+      "name": "失敗時公開禁止と権限分離",
+      "purpose": "失敗/未検証コードや秘密のある実行を公開しない",
+      "inputs": [
+        "変更候補",
+        "検証結果"
+      ],
+      "outputs": [
+        "read-onlyテスト",
+        "公開ゲート"
+      ],
+      "rules": [
+        "生成コードにAPIキー/書込トークンを渡さず、検証成功後のみPR/公開"
+      ],
+      "conditions": [
+        "CI/CD全体"
+      ],
+      "exceptions": [
+        "保護ルールを無効化しない"
+      ],
+      "sources": [
+        ".github/workflows/",
+        "AGENTS.md"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "GitHub側の保護ルールと本番Actions実行は別途確認が必要。"
+      ],
+      "related_requirements": [
+        "QA-001",
+        "SEC-001"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "CI-001-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "workflow構造/権限検査",
+          "method": "workflow構造/権限検査",
+          "status": "unrun"
+        },
+        {
+          "id": "CI-001-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "失敗した検証からdeployへ進まないことを検査",
+          "method": "失敗した検証からdeployへ進まないことを検査",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "AUTO-001",
+      "name": "有限修正と重複防止",
+      "purpose": "失敗を修正しつつ無限実行/重複PRを防ぐ",
+      "inputs": [
+        "同一要求",
+        "失敗証拠"
+      ],
+      "outputs": [
+        "最大3巡の修正",
+        "停止記録",
+        "既存PR識別"
+      ],
+      "rules": [
+        "失敗原因→修正→影響テスト→独立レビュー、上限後停止"
+      ],
+      "conditions": [
+        "自動開発/再実行"
+      ],
+      "exceptions": [
+        "費用/時間/呼出数上限を拡大して継続しない"
+      ],
+      "sources": [
+        "AGENTS.md",
+        "automation/agent_runner.py"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "外部実行の重複競合はGitHub本番では未実証。"
+      ],
+      "related_requirements": [
+        "ORG-002",
+        "CI-001"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "AUTO-001-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "同一要求の反復でPR作成を抑止する検査",
+          "method": "同一要求の反復でPR作成を抑止する検査",
+          "status": "unrun"
+        },
+        {
+          "id": "AUTO-001-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "修正上限到達で停止するテスト",
+          "method": "修正上限到達で停止するテスト",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "SEC-001",
+      "name": "個人情報・外部入力・課金保護",
+      "purpose": "秘密漏えいと無断課金を防ぐ",
+      "inputs": [
+        "Issue/Web/モデル応答"
+      ],
+      "outputs": [
+        "拒否/制限付き候補"
+      ],
+      "rules": [
+        "外部指示はデータ、新規有料API/サービスは明示承認まで禁止"
+      ],
+      "conditions": [
+        "全工程"
+      ],
+      "exceptions": [
+        "資格者/公式確認/無料を推測で断定しない"
+      ],
+      "sources": [
+        "AGENTS.md",
+        "automation/guard.py"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "無料枠は利用者の契約/地域/時期に依存する。"
+      ],
+      "related_requirements": [
+        "CI-001"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "SEC-001-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "automation/test_guard.py",
+          "method": "automation/test_guard.py",
+          "status": "unrun"
+        },
+        {
+          "id": "SEC-001-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "生成コード実行jobに秘密とwrite権限がないことを検査",
+          "method": "生成コード実行jobに秘密とwrite権限がないことを検査",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "APP-001",
+      "name": "既存アプリ互換性",
+      "purpose": "iPhone Safari/ログイン不要/静的配信と端末内保存を維持する",
+      "inputs": [
+        "既存設定",
+        "架空家計入力"
+      ],
+      "outputs": [
+        "計算画面",
+        "年次表",
+        "バックアップ復元"
+      ],
+      "rules": [
+        "既存ロジック/データ互換を監査し全面作り直しを避ける"
+      ],
+      "conditions": [
+        "アプリ全体"
+      ],
+      "exceptions": [
+        "GAS/ログイン/実家計データ公開を導入しない"
+      ],
+      "sources": [
+        "index.html",
+        "engine.js",
+        "education-reserve.html"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "ChromiumのiPhoneサイズは実機Safari確認の代替ではない。"
+      ],
+      "related_requirements": [
+        "QA-001",
+        "APP-002"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "APP-001-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "node --test automation/test_smoke.cjs",
+          "method": "node --test automation/test_smoke.cjs",
+          "status": "unrun"
+        },
+        {
+          "id": "APP-001-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "python automation/test_browser.py",
+          "method": "python automation/test_browser.py",
+          "status": "unrun"
+        },
+        {
+          "id": "APP-001-AT-3",
+          "input": "架空データ/元コード/設定",
+          "expected": "iPhone Safariの保存/復元/計算は実機確認が必要",
+          "method": "iPhone Safariの保存/復元/計算は実機確認が必要",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "APP-002",
+      "name": "計算・制度の不足優先順位",
+      "purpose": "家族/収入/支出/教育/資産/分析の欠落を見える化する",
+      "inputs": [
+        "元コード",
+        "制度資料"
+      ],
+      "outputs": [
+        "現状監査",
+        "問題台帳",
+        "優先順位"
+      ],
+      "rules": [
+        "暦年/年度、月/年、手取/額面、補助/費用重複、繰越を重点監査"
+      ],
+      "conditions": [
+        "計算エンジン全体"
+      ],
+      "exceptions": [
+        "教育準備額統合は二重計上防止の承認済仕様が前提"
+      ],
+      "sources": [
+        "docs/rule-ledger.json",
+        "engine.js"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "今回すべての不足機能を実装するものではなく、重大仕様は承認対象。"
+      ],
+      "related_requirements": [
+        "DATA-001",
+        "QA-001"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "APP-002-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "独立監査の学年/ローン/給付/残高の反例を保存",
+          "method": "独立監査の学年/ローン/給付/残高の反例を保存",
+          "status": "unrun"
+        },
+        {
+          "id": "APP-002-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "教育準備額と本体の接続可否を記録",
+          "method": "教育準備額と本体の接続可否を記録",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "OPS-001",
+      "name": "iPhone自然言語運用",
+      "purpose": "非技術者が手動編集せず継続指示できる",
+      "inputs": [
+        "Codex指示または所有者Issue"
+      ],
+      "outputs": [
+        "レビュー可能PR",
+        "必要な重要判断のみ"
+      ],
+      "rules": [
+        "工程ごと確認せず合理的仮定で進め、重要変更のみ承認待ち"
+      ],
+      "conditions": [
+        "日常運用"
+      ],
+      "exceptions": [
+        "接続権限のない操作は実行済みと偽らない"
+      ],
+      "sources": [
+        "docs/IPHONE_OPERATIONS.md"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "GitHub API/ブランチ保護/モデル枠のサービス設定は環境依存。"
+      ],
+      "related_requirements": [
+        "ORG-002",
+        "CI-001"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "OPS-001-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "安全な小規模要求と計算要求のE2E試験",
+          "method": "安全な小規模要求と計算要求のE2E試験",
+          "status": "unrun"
+        },
+        {
+          "id": "OPS-001-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "後者でpublication_authorized=falseを確認",
+          "method": "後者でpublication_authorized=falseを確認",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "REL-001",
+      "name": "リスク別PRと公開後確認",
+      "purpose": "未承認の重要変更を本番へ出さない",
+      "inputs": [
+        "差分",
+        "テスト証拠",
+        "利用者承認"
+      ],
+      "outputs": [
+        "PR",
+        "公開可否",
+        "確認/復旧記録"
+      ],
+      "rules": [
+        "計算/制度/金額/セキュリティ/権限変更は承認後、重大未解決なら禁止"
+      ],
+      "conditions": [
+        "PR/公開全体"
+      ],
+      "exceptions": [
+        "低リスクも保護と必須テストが必要"
+      ],
+      "sources": [
+        "automation/release_policy.py",
+        "AGENTS.md"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "ローカルのpolicy判定は本番公開成功の証拠ではない。"
+      ],
+      "related_requirements": [
+        "CI-001",
+        "QA-001"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "REL-001-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "automation/test_release_policy.py",
+          "method": "automation/test_release_policy.py",
+          "status": "unrun"
+        },
+        {
+          "id": "REL-001-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "公開URLの対象SHAと重要操作の確認（権限確保後）",
+          "method": "公開URLの対象SHAと重要操作の確認（権限確保後）",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    },
+    {
+      "id": "ENV-001",
+      "name": "再利用可能なクラウド環境",
+      "purpose": "新タスクで依存/起動手順を再現する",
+      "inputs": [
+        "既存checkout",
+        "Python/Node"
+      ],
+      "outputs": [
+        "install_script",
+        "start_skill",
+        "実行証拠"
+      ],
+      "rules": [
+        "既存checkoutを使い依存導入/サービス起動/機能要求を実行する"
+      ],
+      "conditions": [
+        "クラウド環境"
+      ],
+      "exceptions": [
+        "worktreeは明示要求時だけ"
+      ],
+      "sources": [
+        "AGENTS.md",
+        "README.md"
+      ],
+      "target_year": "2026年初期構築。制度の適用年はrule-ledgerで個別管理",
+      "unknowns": [
+        "新しい公開済snapshotからの復元は今回の実行と区別する。"
+      ],
+      "related_requirements": [
+        "APP-001"
+      ],
+      "acceptance_tests": [
+        {
+          "id": "ENV-001-AT-1",
+          "input": "架空データ/元コード/設定",
+          "expected": "Python/Node既存テスト",
+          "method": "Python/Node既存テスト",
+          "status": "unrun"
+        },
+        {
+          "id": "ENV-001-AT-2",
+          "input": "架空データ/元コード/設定",
+          "expected": "ローカルHTTPとブラウザで実ページ動作を確認",
+          "method": "ローカルHTTPとブラウザで実ページ動作を確認",
+          "status": "unrun"
+        }
+      ],
+      "counter_review": "C担当が原資料/コードから検証。未実施の項目は未検証のまま。",
+      "final_verdict": "pending_current_run_evidence"
+    }
+  ]
+}
